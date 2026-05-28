@@ -190,12 +190,12 @@
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label">Tanggal *</label>
-          <input class="input" type="date" bind:value={form.tanggal} />
+          <label class="label" for="kb-tanggal">Tanggal *</label>
+          <input id="kb-tanggal" class="input" type="date" bind:value={form.tanggal} />
         </div>
         <div>
-          <label class="label">Akun Kas/Bank *</label>
-          <select class="input" bind:value={form.akun_id}>
+          <label class="label" for="kb-akun">Akun Kas/Bank *</label>
+          <select id="kb-akun" class="input" bind:value={form.akun_id}>
             <option value={0}>-- Pilih Akun --</option>
             {#each akunKasBankList as a}
               <option value={a.id}>{a.nama}</option>
@@ -204,8 +204,8 @@
         </div>
       </div>
       <div>
-        <label class="label">Akun Lawan</label>
-        <select class="input" bind:value={form.akun_lawan_id}>
+        <label class="label" for="kb-akun-lawan">Akun Lawan</label>
+        <select id="kb-akun-lawan" class="input" bind:value={form.akun_lawan_id}>
           <option value={null}>-- Pilih Akun Lawan --</option>
           {#each akunAll as a}
             <option value={a.id}>{a.kode} - {a.nama}</option>
@@ -213,12 +213,12 @@
         </select>
       </div>
       <div>
-        <label class="label">Jumlah *</label>
-        <input class="input" type="number" placeholder="0" bind:value={form.jumlah} />
+        <label class="label" for="kb-jumlah">Jumlah *</label>
+        <input id="kb-jumlah" class="input" type="number" placeholder="0" bind:value={form.jumlah} />
       </div>
       <div>
-        <label class="label">Keterangan</label>
-        <input class="input" placeholder="Keterangan transaksi..." bind:value={form.keterangan} />
+        <label class="label" for="kb-ket">Keterangan</label>
+        <input id="kb-ket" class="input" placeholder="Keterangan transaksi..." bind:value={form.keterangan} />
       </div>
     </div>
   {/snippet}

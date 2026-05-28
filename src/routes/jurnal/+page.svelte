@@ -230,27 +230,27 @@
     <div class="space-y-4">
       <div class="grid grid-cols-3 gap-3">
         <div>
-          <label class="label">Tanggal *</label>
-          <input class="input" type="date" bind:value={form.tanggal} />
+          <label class="label" for="jrn-tanggal">Tanggal *</label>
+          <input id="jrn-tanggal" class="input" type="date" bind:value={form.tanggal} />
         </div>
         <div>
-          <label class="label">Tipe</label>
-          <select class="input" bind:value={form.tipe}>
+          <label class="label" for="jrn-tipe">Tipe</label>
+          <select id="jrn-tipe" class="input" bind:value={form.tipe}>
             <option value="Umum">Jurnal Umum</option>
             <option value="Kas">Kas</option>
             <option value="Bank">Bank</option>
           </select>
         </div>
         <div>
-          <label class="label">Keterangan</label>
-          <input class="input" placeholder="Keterangan jurnal..." bind:value={form.keterangan} />
+          <label class="label" for="jrn-ket">Keterangan</label>
+          <input id="jrn-ket" class="input" placeholder="Keterangan jurnal..." bind:value={form.keterangan} />
         </div>
       </div>
 
       <!-- Detail lines -->
       <div>
         <div class="flex items-center justify-between mb-2">
-          <label class="label mb-0">Detail Jurnal</label>
+          <span class="label mb-0">Detail Jurnal</span>
           <button class="btn-secondary btn-sm" onclick={addRow}><Plus size={13} /> Tambah Baris</button>
         </div>
         <div class="rounded-xl border border-gray-200 overflow-hidden">

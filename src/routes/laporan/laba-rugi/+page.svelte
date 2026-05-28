@@ -46,16 +46,16 @@
   <!-- Filter -->
   <div class="card p-4 mb-6 flex items-center gap-4">
     <div>
-      <label class="label">Tahun</label>
-      <select class="input w-28" bind:value={tahun} onchange={load}>
+      <label class="label" for="lr-tahun">Tahun</label>
+      <select id="lr-tahun" class="input w-28" bind:value={tahun} onchange={load}>
         {#each [2024, 2025, 2026] as y}
           <option value={y}>{y}</option>
         {/each}
       </select>
     </div>
     <div>
-      <label class="label">Bulan</label>
-      <select class="input w-36" bind:value={bulan} onchange={load}>
+      <label class="label" for="lr-bulan">Bulan</label>
+      <select id="lr-bulan" class="input w-36" bind:value={bulan} onchange={load}>
         <option value="">Semua Bulan</option>
         {#each bulanNama as b, i}
           <option value={i + 1}>{b}</option>

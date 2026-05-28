@@ -148,32 +148,32 @@
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label">Kode *</label>
-          <input class="input" placeholder="PRD-001" bind:value={form.kode} />
+          <label class="label" for="prd-kode">Kode *</label>
+          <input id="prd-kode" class="input" placeholder="PRD-001" bind:value={form.kode} />
         </div>
         <div>
-          <label class="label">Satuan *</label>
-          <input class="input" placeholder="pcs, kg, box..." bind:value={form.satuan} />
+          <label class="label" for="prd-satuan">Satuan *</label>
+          <input id="prd-satuan" class="input" placeholder="pcs, kg, box..." bind:value={form.satuan} />
         </div>
       </div>
       <div>
-        <label class="label">Nama Produk *</label>
-        <input class="input" placeholder="Nama produk" bind:value={form.nama} />
+        <label class="label" for="prd-nama">Nama Produk *</label>
+        <input id="prd-nama" class="input" placeholder="Nama produk" bind:value={form.nama} />
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label">Harga Beli</label>
-          <input class="input" type="number" placeholder="0" bind:value={form.harga_beli} />
+          <label class="label" for="prd-harga-beli">Harga Beli</label>
+          <input id="prd-harga-beli" class="input" type="number" placeholder="0" bind:value={form.harga_beli} />
         </div>
         <div>
-          <label class="label">Harga Jual</label>
-          <input class="input" type="number" placeholder="0" bind:value={form.harga_jual} />
+          <label class="label" for="prd-harga-jual">Harga Jual</label>
+          <input id="prd-harga-jual" class="input" type="number" placeholder="0" bind:value={form.harga_jual} />
         </div>
       </div>
       {#if !editingId}
         <div>
-          <label class="label">Stok Awal</label>
-          <input class="input" type="number" placeholder="0" bind:value={form.stok} />
+          <label class="label" for="prd-stok">Stok Awal</label>
+          <input id="prd-stok" class="input" type="number" placeholder="0" bind:value={form.stok} />
         </div>
       {/if}
     </div>

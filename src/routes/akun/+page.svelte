@@ -202,12 +202,12 @@
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label">Kode Akun *</label>
-          <input class="input" placeholder="1-1001" bind:value={form.kode} />
+          <label class="label" for="akun-kode">Kode Akun *</label>
+          <input id="akun-kode" class="input" placeholder="1-1001" bind:value={form.kode} />
         </div>
         <div>
-          <label class="label">Tipe *</label>
-          <select class="input" bind:value={form.tipe} onchange={onTipeChange}>
+          <label class="label" for="akun-tipe">Tipe *</label>
+          <select id="akun-tipe" class="input" bind:value={form.tipe} onchange={onTipeChange}>
             {#each tipeOptions as t}
               <option value={t}>{t}</option>
             {/each}
@@ -215,17 +215,17 @@
         </div>
       </div>
       <div>
-        <label class="label">Nama Akun *</label>
-        <input class="input" placeholder="Masukkan nama akun..." bind:value={form.nama} />
+        <label class="label" for="akun-nama">Nama Akun *</label>
+        <input id="akun-nama" class="input" placeholder="Masukkan nama akun..." bind:value={form.nama} />
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label">Sub Tipe</label>
-          <input class="input" placeholder="Lancar, Tetap, dll." bind:value={form.sub_tipe} />
+          <label class="label" for="akun-sub-tipe">Sub Tipe</label>
+          <input id="akun-sub-tipe" class="input" placeholder="Lancar, Tetap, dll." bind:value={form.sub_tipe} />
         </div>
         <div>
-          <label class="label">Saldo Normal</label>
-          <select class="input" bind:value={form.saldo_normal}>
+          <label class="label" for="akun-saldo-normal">Saldo Normal</label>
+          <select id="akun-saldo-normal" class="input" bind:value={form.saldo_normal}>
             <option value="Debit">Debit</option>
             <option value="Kredit">Kredit</option>
           </select>
@@ -233,8 +233,8 @@
       </div>
       {#if !editingId}
         <div>
-          <label class="label">Saldo Awal</label>
-          <input class="input" type="number" placeholder="0" bind:value={form.saldo} />
+          <label class="label" for="akun-saldo">Saldo Awal</label>
+          <input id="akun-saldo" class="input" type="number" placeholder="0" bind:value={form.saldo} />
         </div>
       {/if}
     </div>

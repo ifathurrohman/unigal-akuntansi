@@ -156,27 +156,27 @@
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label">Kode *</label>
-          <input class="input" placeholder="PLG-001" bind:value={form.kode} />
+          <label class="label" for="plg-kode">Kode *</label>
+          <input id="plg-kode" class="input" placeholder="PLG-001" bind:value={form.kode} />
         </div>
         <div>
-          <label class="label">Nama *</label>
-          <input class="input" placeholder="Nama pelanggan" bind:value={form.nama} />
+          <label class="label" for="plg-nama">Nama *</label>
+          <input id="plg-nama" class="input" placeholder="Nama pelanggan" bind:value={form.nama} />
         </div>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label">Telepon</label>
-          <input class="input" placeholder="08xx" bind:value={form.telepon} />
+          <label class="label" for="plg-telepon">Telepon</label>
+          <input id="plg-telepon" class="input" placeholder="08xx" bind:value={form.telepon} />
         </div>
         <div>
-          <label class="label">Email</label>
-          <input class="input" type="email" placeholder="email@domain.com" bind:value={form.email} />
+          <label class="label" for="plg-email">Email</label>
+          <input id="plg-email" class="input" type="email" placeholder="email@domain.com" bind:value={form.email} />
         </div>
       </div>
       <div>
-        <label class="label">Alamat</label>
-        <textarea class="input" rows="2" placeholder="Alamat lengkap..." bind:value={form.alamat}></textarea>
+        <label class="label" for="plg-alamat">Alamat</label>
+        <textarea id="plg-alamat" class="input" rows="2" placeholder="Alamat lengkap..." bind:value={form.alamat}></textarea>
       </div>
     </div>
   {/snippet}
