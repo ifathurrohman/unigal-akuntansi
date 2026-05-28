@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(npx create-tauri-app@latest . --template svelte-ts --manager npm)",
+      "Bash(npx create-tauri-app@latest akuntansi-temp --template svelte-ts --manager npm --yes)",
+      "Bash(Get-ChildItem \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\" -Recurse)",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src-tauri\\\\src\\\\db\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src-tauri\\\\src\\\\models\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src-tauri\\\\src\\\\commands\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\lib\\\\types\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\lib\\\\stores\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\lib\\\\components\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\akun\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\pelanggan\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\supplier\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\produk\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\jurnal\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\kas-bank\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\laporan\\\\laba-rugi\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\laporan\\\\neraca\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\.github\\\\workflows\")"
+    ]
+  }
+}
