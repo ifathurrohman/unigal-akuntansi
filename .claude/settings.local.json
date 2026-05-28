@@ -19,7 +19,15 @@
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\kas-bank\")",
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\laporan\\\\laba-rugi\")",
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\src\\\\routes\\\\laporan\\\\neraca\")",
-      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\.github\\\\workflows\")"
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\GALUH\\\\akuntansi\\\\.github\\\\workflows\")",
+      "PowerShell(Set-Location \"d:\\\\CODE\\\\GALUH\\\\akuntansi\" && npm run tauri signer generate -- -w \"$env:USERPROFILE\\\\.tauri\\\\unigal.key\" 2>&1)",
+      "PowerShell(Set-Location \"d:\\\\CODE\\\\GALUH\\\\akuntansi\" && npx tauri signer generate -w \"$env:USERPROFILE\\\\.tauri\\\\unigal.key\" 2>&1)",
+      "Bash(npx tauri *)",
+      "Read(//c/Users/Irfan/.tauri/**)",
+      "Bash(CI=true TAURI_SIGNING_PRIVATE_KEY_PASSWORD=\"\" npx tauri signer generate -w \"/c/Users/Irfan/.tauri/unigal.key\")",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(cat \"/c/Users/Irfan/.tauri/unigal.key.pub\")",
+      "Bash(cat \"/c/Users/Irfan/.tauri/unigal.key\")"
     ]
   }
 }
