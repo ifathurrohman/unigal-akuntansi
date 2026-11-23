@@ -3,8 +3,14 @@
   import { Plus, Search, Trash2, ChevronDown, ChevronRight, X } from 'lucide-svelte';
   import Modal from '$lib/components/Modal.svelte';
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
-  import { callCommand, showNotification, formatCurrency, formatDate } from '$lib/stores/app.svelte';
-  import type { Jurnal, JurnalInput, JurnalDetailInput, Akun } from '$lib/types';
+  import { callCommand, showNotification, hariIni, formatCurrency, formatDate } from '$lib/stores/app.svelte';
+  import type { Jurnal, JurnalInput, Akun } from '$lib/types';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import { Input } from '$lib/components/ui/input/index.js';
+  import { Label } from '$lib/components/ui/label/index.js';
+  import * as Select from '$lib/components/ui/select/index.js';
+  import * as Table from '$lib/components/ui/table/index.js';
+  import { DatePicker } from '$lib/components/ui/date-picker/index.js';
 
   let list = $state<Jurnal[]>([]);
   let akun = $state<Akun[]>([]);
@@ -17,10 +23,8 @@
   let saving = $state(false);
   let deleting = $state(false);
 
-  const today = new Date().toISOString().slice(0, 10);
-
   let form = $state<JurnalInput>({
-    tanggal: today,
+    tanggal: hariIni(),
     keterangan: null,
     tipe: 'Umum',
     detail: [
@@ -52,7 +56,7 @@
 
   function openCreate() {
     form = {
-      tanggal: today,
+      tanggal: hariIni(),
       keterangan: null,
       tipe: 'Umum',
       detail: [
@@ -73,15 +77,11 @@
   }
 
   function onDebitChange(i: number) {
-    if (Number(form.detail[i].debit) > 0) {
-      form.detail[i].kredit = 0;
-    }
+    if (Number(form.detail[i].debit) > 0) form.detail[i].kredit = 0;
   }
 
   function onKreditChange(i: number) {
-    if (Number(form.detail[i].kredit) > 0) {
-      form.detail[i].debit = 0;
-    }
+    if (Number(form.detail[i].kredit) > 0) form.detail[i].debit = 0;
   }
 
   async function save() {
@@ -131,88 +131,90 @@
 </script>
 
 <div class="p-6">
-  <div class="page-header">
+  <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="page-title">Jurnal Umum</h1>
-      <p class="page-subtitle">{list.length} entri jurnal</p>
+      <h1 class="text-xl font-semibold text-foreground">Jurnal Umum</h1>
+      <p class="text-sm text-muted-foreground mt-0.5">{list.length} entri jurnal</p>
     </div>
-    <button class="btn-primary" onclick={openCreate}><Plus size={16} /> Buat Jurnal</button>
+    <Button onclick={openCreate}><Plus size={16} /> Buat Jurnal</Button>
   </div>
 
   <div class="flex items-center gap-3 mb-4">
     <div class="relative flex-1 max-w-sm">
-      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-      <input class="input pl-9" placeholder="Cari nomor atau keterangan..." bind:value={search} />
+      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <Input class="pl-9" placeholder="Cari nomor atau keterangan..." bind:value={search} />
     </div>
   </div>
 
   <div class="space-y-2">
     {#if loading}
-      <div class="card p-8 text-center text-gray-400">Memuat data...</div>
+      <div class="bg-card rounded-xl border border-border p-8 text-center text-muted-foreground">Memuat data...</div>
     {:else if filtered.length === 0}
-      <div class="card p-8 text-center text-gray-400">Tidak ada jurnal</div>
+      <div class="bg-card rounded-xl border border-border p-8 text-center text-muted-foreground">Tidak ada jurnal</div>
     {:else}
       {#each filtered as j}
-        <div class="card overflow-hidden">
+        <div class="bg-card rounded-xl border border-border overflow-hidden">
           <!-- Header row -->
           <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
           <div
-            class="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+            class="w-full flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
             role="button"
             tabindex="0"
             onclick={() => expandedId = expandedId === j.id ? null : j.id}
           >
-            <div class="shrink-0 text-gray-300">
+            <div class="shrink-0 text-muted-foreground/40">
               {#if expandedId === j.id}
                 <ChevronDown size={16} />
               {:else}
                 <ChevronRight size={16} />
               {/if}
             </div>
-            <div class="font-mono text-xs font-semibold text-primary-600 w-32 shrink-0">{j.nomor}</div>
-            <div class="text-xs text-gray-500 w-24 shrink-0">{formatDate(j.tanggal)}</div>
-            <div class="flex-1 text-sm text-gray-700 truncate">{j.keterangan || '-'}</div>
-            <div class="text-sm font-semibold text-gray-900 w-36 text-right shrink-0">{formatCurrency(j.total_debit)}</div>
-            <button
-              class="btn-ghost btn-sm p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0"
+            <div class="font-mono text-xs font-semibold text-primary w-32 shrink-0">{j.nomor}</div>
+            <div class="text-xs text-muted-foreground w-24 shrink-0">{formatDate(j.tanggal)}</div>
+            <div class="flex-1 text-sm text-foreground truncate">{j.keterangan || '-'}</div>
+            <div class="text-sm font-semibold text-foreground w-36 text-right shrink-0">{formatCurrency(j.total_debit)}</div>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              class="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
               onclick={(e) => { e.stopPropagation(); deletingId = j.id; showConfirm = true; }}
             >
               <Trash2 size={14} />
-            </button>
+            </Button>
           </div>
 
           <!-- Detail rows -->
           {#if expandedId === j.id}
-            <div class="border-t border-gray-100 bg-gray-50/50">
+            <div class="border-t border-border bg-muted/20">
               <table class="w-full text-xs">
                 <thead>
-                  <tr class="border-b border-gray-100">
-                    <th class="px-8 py-2 text-left text-gray-400 font-medium">Akun</th>
-                    <th class="px-4 py-2 text-left text-gray-400 font-medium">Keterangan</th>
-                    <th class="px-4 py-2 text-right text-gray-400 font-medium">Debit</th>
-                    <th class="px-4 py-2 text-right text-gray-400 font-medium">Kredit</th>
+                  <tr class="border-b border-border">
+                    <th class="px-8 py-2 text-left text-muted-foreground font-medium">Akun</th>
+                    <th class="px-4 py-2 text-left text-muted-foreground font-medium">Keterangan</th>
+                    <th class="px-4 py-2 text-right text-muted-foreground font-medium">Debit</th>
+                    <th class="px-4 py-2 text-right text-muted-foreground font-medium">Kredit</th>
                   </tr>
                 </thead>
                 <tbody>
                   {#each j.detail as d}
-                    <tr class="border-b border-gray-50">
+                    <tr class="border-b border-border/50">
                       <td class="px-8 py-2">
-                        <span class="font-mono text-gray-400">{d.akun_kode}</span>
-                        <span class="ml-2 text-gray-700">{d.akun_nama}</span>
+                        <span class="font-mono text-muted-foreground">{d.akun_kode}</span>
+                        <span class="ml-2 text-foreground">{d.akun_nama}</span>
                       </td>
-                      <td class="px-4 py-2 text-gray-500">{d.keterangan || '-'}</td>
-                      <td class="px-4 py-2 text-right font-medium {d.debit > 0 ? 'text-gray-900' : 'text-gray-300'}">
+                      <td class="px-4 py-2 text-muted-foreground">{d.keterangan || '-'}</td>
+                      <td class="px-4 py-2 text-right font-medium {d.debit > 0 ? 'text-foreground' : 'text-muted-foreground/40'}">
                         {d.debit > 0 ? formatCurrency(d.debit) : '-'}
                       </td>
-                      <td class="px-4 py-2 text-right font-medium {d.kredit > 0 ? 'text-gray-900' : 'text-gray-300'}">
+                      <td class="px-4 py-2 text-right font-medium {d.kredit > 0 ? 'text-foreground' : 'text-muted-foreground/40'}">
                         {d.kredit > 0 ? formatCurrency(d.kredit) : '-'}
                       </td>
                     </tr>
                   {/each}
-                  <tr class="bg-gray-100/80">
-                    <td colspan="2" class="px-8 py-2 font-semibold text-gray-600">Total</td>
-                    <td class="px-4 py-2 text-right font-bold text-gray-900">{formatCurrency(j.total_debit)}</td>
-                    <td class="px-4 py-2 text-right font-bold text-gray-900">{formatCurrency(j.total_kredit)}</td>
+                  <tr class="bg-muted/50">
+                    <td colspan="2" class="px-8 py-2 font-semibold text-muted-foreground">Total</td>
+                    <td class="px-4 py-2 text-right font-bold text-foreground">{formatCurrency(j.total_debit)}</td>
+                    <td class="px-4 py-2 text-right font-bold text-foreground">{formatCurrency(j.total_kredit)}</td>
                   </tr>
                 </tbody>
               </table>
@@ -225,73 +227,83 @@
 </div>
 
 <!-- Modal Jurnal -->
-<Modal open={showModal} title="Buat Jurnal Umum" maxWidth="max-w-3xl" onClose={() => showModal = false}>
+<Modal open={showModal} title="Buat Jurnal Umum" maxWidth="sm:max-w-3xl" onClose={() => showModal = false}>
   {#snippet children()}
     <div class="space-y-4">
       <div class="grid grid-cols-3 gap-3">
         <div>
-          <label class="label" for="jrn-tanggal">Tanggal *</label>
-          <input id="jrn-tanggal" class="input" type="date" bind:value={form.tanggal} />
+          <Label for="jrn-tanggal">Tanggal *</Label>
+          <DatePicker id="jrn-tanggal" bind:value={form.tanggal} />
         </div>
         <div>
-          <label class="label" for="jrn-tipe">Tipe</label>
-          <select id="jrn-tipe" class="input" bind:value={form.tipe}>
-            <option value="Umum">Jurnal Umum</option>
-            <option value="Kas">Kas</option>
-            <option value="Bank">Bank</option>
-          </select>
+          <Label for="jrn-tipe">Tipe</Label>
+          <Select.Root bind:value={form.tipe}>
+            <Select.Trigger class="w-full" id="jrn-tipe">
+              <Select.Value />
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="Umum">Jurnal Umum</Select.Item>
+              <Select.Item value="Saldo Awal">Saldo Awal (Neraca Awal)</Select.Item>
+              <Select.Item value="Kas">Kas</Select.Item>
+              <Select.Item value="Bank">Bank</Select.Item>
+            </Select.Content>
+          </Select.Root>
         </div>
         <div>
-          <label class="label" for="jrn-ket">Keterangan</label>
-          <input id="jrn-ket" class="input" placeholder="Keterangan jurnal..." bind:value={form.keterangan} />
+          <Label for="jrn-ket">Keterangan</Label>
+          <Input id="jrn-ket" placeholder="Keterangan jurnal..." bind:value={form.keterangan} />
         </div>
       </div>
 
       <!-- Detail lines -->
       <div>
         <div class="flex items-center justify-between mb-2">
-          <span class="label mb-0">Detail Jurnal</span>
-          <button class="btn-secondary btn-sm" onclick={addRow}><Plus size={13} /> Tambah Baris</button>
+          <span class="text-xs font-medium text-muted-foreground">Detail Jurnal</span>
+          <Button variant="outline" size="sm" onclick={addRow}><Plus size={13} /> Tambah Baris</Button>
         </div>
-        <div class="rounded-xl border border-gray-200 overflow-hidden">
+        <div class="rounded-xl border border-border overflow-hidden">
           <table class="w-full text-sm">
             <thead>
-              <tr class="bg-gray-50 border-b border-gray-200">
-                <th class="px-3 py-2 text-left text-xs text-gray-500 font-medium w-8">#</th>
-                <th class="px-3 py-2 text-left text-xs text-gray-500 font-medium">Akun *</th>
-                <th class="px-3 py-2 text-left text-xs text-gray-500 font-medium">Keterangan</th>
-                <th class="px-3 py-2 text-right text-xs text-gray-500 font-medium w-32">Debit</th>
-                <th class="px-3 py-2 text-right text-xs text-gray-500 font-medium w-32">Kredit</th>
+              <tr class="bg-muted/50 border-b border-border">
+                <th class="px-3 py-2 text-left text-xs text-muted-foreground font-medium w-8">#</th>
+                <th class="px-3 py-2 text-left text-xs text-muted-foreground font-medium">Akun *</th>
+                <th class="px-3 py-2 text-left text-xs text-muted-foreground font-medium">Keterangan</th>
+                <th class="px-3 py-2 text-right text-xs text-muted-foreground font-medium w-32">Debit</th>
+                <th class="px-3 py-2 text-right text-xs text-muted-foreground font-medium w-32">Kredit</th>
                 <th class="w-8"></th>
               </tr>
             </thead>
             <tbody>
               {#each form.detail as row, i}
-                <tr class="border-b border-gray-100 last:border-0">
-                  <td class="px-3 py-2 text-gray-400 text-xs">{i + 1}</td>
+                <tr class="border-b border-border last:border-0">
+                  <td class="px-3 py-2 text-muted-foreground text-xs">{i + 1}</td>
                   <td class="px-3 py-2">
-                    <select class="input text-xs py-1.5" bind:value={form.detail[i].akun_id}>
+                    <!-- Native select styled to match shadcn input for inline table use -->
+                    <select
+                      class="h-8 w-full rounded-lg border border-input bg-transparent pl-2.5 pr-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                      bind:value={form.detail[i].akun_id}
+                    >
                       <option value={0}>-- Pilih Akun --</option>
-                      {#each akun as a}
+                      {#each akun.filter(x => !x.header && x.aktif) as a}
                         <option value={a.id}>{a.kode} - {a.nama}</option>
                       {/each}
                     </select>
                   </td>
                   <td class="px-3 py-2">
-                    <input class="input text-xs py-1.5" placeholder="Keterangan..." bind:value={form.detail[i].keterangan} />
+                    <Input class="text-xs py-1 h-8" placeholder="Keterangan..." bind:value={form.detail[i].keterangan} />
                   </td>
                   <td class="px-3 py-2">
-                    <input class="input text-xs py-1.5 text-right" type="number" placeholder="0"
+                    <Input class="text-xs py-1 h-8 text-right" type="number" placeholder="0"
                       bind:value={form.detail[i].debit}
                       oninput={() => onDebitChange(i)} />
                   </td>
                   <td class="px-3 py-2">
-                    <input class="input text-xs py-1.5 text-right" type="number" placeholder="0"
+                    <Input class="text-xs py-1 h-8 text-right" type="number" placeholder="0"
                       bind:value={form.detail[i].kredit}
                       oninput={() => onKreditChange(i)} />
                   </td>
                   <td class="px-3 py-2">
-                    <button class="p-1 text-gray-300 hover:text-red-500 transition-colors" onclick={() => removeRow(i)}>
+                    <button class="p-1 text-muted-foreground/40 hover:text-destructive transition-colors" onclick={() => removeRow(i)}>
                       <X size={14} />
                     </button>
                   </td>
@@ -299,17 +311,17 @@
               {/each}
             </tbody>
             <tfoot>
-              <tr class="bg-gray-50 border-t border-gray-200">
-                <td colspan="3" class="px-3 py-2 text-xs font-semibold text-gray-600">Total</td>
-                <td class="px-3 py-2 text-right text-sm font-bold text-gray-900">{formatCurrency(totalDebit)}</td>
-                <td class="px-3 py-2 text-right text-sm font-bold text-gray-900">{formatCurrency(totalKredit)}</td>
+              <tr class="bg-muted/50 border-t border-border">
+                <td colspan="3" class="px-3 py-2 text-xs font-semibold text-muted-foreground">Total</td>
+                <td class="px-3 py-2 text-right text-sm font-bold text-foreground">{formatCurrency(totalDebit)}</td>
+                <td class="px-3 py-2 text-right text-sm font-bold text-foreground">{formatCurrency(totalKredit)}</td>
                 <td></td>
               </tr>
             </tfoot>
           </table>
         </div>
         {#if !balanced && (totalDebit > 0 || totalKredit > 0)}
-          <p class="text-xs text-red-500 mt-1.5">
+          <p class="text-xs text-destructive mt-1.5">
             Selisih: {formatCurrency(Math.abs(totalDebit - totalKredit))} — Debit dan Kredit harus seimbang
           </p>
         {:else if balanced && totalDebit > 0}
@@ -319,10 +331,10 @@
     </div>
   {/snippet}
   {#snippet footer()}
-    <button class="btn-secondary" onclick={() => showModal = false}>Batal</button>
-    <button class="btn-primary" onclick={save} disabled={saving || !balanced}>
+    <Button variant="outline" onclick={() => showModal = false}>Batal</Button>
+    <Button onclick={save} disabled={saving || !balanced}>
       {saving ? 'Menyimpan...' : 'Simpan Jurnal'}
-    </button>
+    </Button>
   {/snippet}
 </Modal>
 

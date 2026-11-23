@@ -7,6 +7,8 @@ export interface Akun {
   saldo_normal: 'Debit' | 'Kredit';
   saldo: number;
   aktif: boolean;
+  header: boolean;
+  kas_bank: boolean;
   created_at: string;
 }
 
@@ -16,7 +18,8 @@ export interface AkunInput {
   tipe: string;
   sub_tipe: string | null;
   saldo_normal: string;
-  saldo?: number;
+  header: boolean;
+  kas_bank: boolean;
 }
 
 export interface Pelanggan {
@@ -167,4 +170,39 @@ export interface NeracaItem {
   tipe: string;
   sub_tipe: string | null;
   saldo: number;
+}
+
+export interface Perusahaan {
+  nama: string;
+  alamat: string | null;
+  kota: string | null;
+  telepon: string | null;
+  email: string | null;
+  npwp: string | null;
+  akun_laba_ditahan_id: number | null;
+  tanggal_kerja: string | null;
+}
+
+export interface Periode {
+  id: number;
+  nama: string;
+  tanggal_mulai: string;
+  tanggal_selesai: string;
+  status: 'Aktif' | 'Ditutup';
+  closed_at: string | null;
+}
+
+export interface PeriodeInput {
+  nama: string;
+  tanggal_mulai: string;
+  tanggal_selesai: string;
+}
+
+export interface LaporanArsip {
+  jenis: 'LabaRugi' | 'Neraca';
+  created_at: string;
+  data: {
+    meta: { nama: string; tanggal_mulai: string; tanggal_selesai: string };
+    items: (LabaRugiItem | NeracaItem)[];
+  };
 }

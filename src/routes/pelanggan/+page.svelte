@@ -5,6 +5,10 @@
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
   import { callCommand, showNotification, formatCurrency } from '$lib/stores/app.svelte';
   import type { Pelanggan, PelangganInput } from '$lib/types';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import { Input } from '$lib/components/ui/input/index.js';
+  import { Label } from '$lib/components/ui/label/index.js';
+  import * as Table from '$lib/components/ui/table/index.js';
 
   let list = $state<Pelanggan[]>([]);
   let loading = $state(true);
@@ -79,75 +83,75 @@
 </script>
 
 <div class="p-6">
-  <div class="page-header">
+  <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="page-title">Pelanggan</h1>
-      <p class="page-subtitle">{list.length} pelanggan terdaftar</p>
+      <h1 class="text-xl font-semibold text-foreground">Pelanggan</h1>
+      <p class="text-sm text-muted-foreground mt-0.5">{list.length} pelanggan terdaftar</p>
     </div>
-    <button class="btn-primary" onclick={openCreate}><Plus size={16} /> Tambah Pelanggan</button>
+    <Button onclick={openCreate}><Plus size={16} /> Tambah Pelanggan</Button>
   </div>
 
   <div class="flex items-center gap-3 mb-4">
     <div class="relative flex-1 max-w-sm">
-      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-      <input class="input pl-9" placeholder="Cari pelanggan..." bind:value={search} />
+      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <Input class="pl-9" placeholder="Cari pelanggan..." bind:value={search} />
     </div>
   </div>
 
-  <div class="table-wrapper">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Kode</th>
-          <th>Nama</th>
-          <th>Telepon</th>
-          <th>Email</th>
-          <th class="text-right">Piutang</th>
-          <th class="text-center">Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
+  <div class="overflow-x-auto rounded-xl border border-border">
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.Head>Kode</Table.Head>
+          <Table.Head>Nama</Table.Head>
+          <Table.Head>Telepon</Table.Head>
+          <Table.Head>Email</Table.Head>
+          <Table.Head class="text-right">Piutang</Table.Head>
+          <Table.Head class="text-center">Aksi</Table.Head>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
         {#if loading}
-          <tr><td colspan="6" class="text-center py-12 text-gray-400">Memuat data...</td></tr>
+          <Table.Row><Table.Cell colspan={6} class="text-center py-12 text-muted-foreground">Memuat data...</Table.Cell></Table.Row>
         {:else if filtered.length === 0}
-          <tr><td colspan="6" class="text-center py-12 text-gray-400">Tidak ada data</td></tr>
+          <Table.Row><Table.Cell colspan={6} class="text-center py-12 text-muted-foreground">Tidak ada data</Table.Cell></Table.Row>
         {:else}
           {#each filtered as p}
-            <tr>
-              <td class="font-mono text-xs font-medium text-gray-500">{p.kode}</td>
-              <td class="font-medium text-gray-900">{p.nama}</td>
-              <td>
+            <Table.Row>
+              <Table.Cell class="font-mono text-xs font-medium text-muted-foreground">{p.kode}</Table.Cell>
+              <Table.Cell class="font-medium text-foreground">{p.nama}</Table.Cell>
+              <Table.Cell>
                 {#if p.telepon}
-                  <div class="flex items-center gap-1 text-gray-500 text-xs">
+                  <div class="flex items-center gap-1 text-muted-foreground text-xs">
                     <Phone size={12} />{p.telepon}
                   </div>
                 {:else}
-                  <span class="text-gray-300">-</span>
+                  <span class="text-muted-foreground/40">-</span>
                 {/if}
-              </td>
-              <td>
+              </Table.Cell>
+              <Table.Cell>
                 {#if p.email}
-                  <div class="flex items-center gap-1 text-gray-500 text-xs">
+                  <div class="flex items-center gap-1 text-muted-foreground text-xs">
                     <Mail size={12} />{p.email}
                   </div>
                 {:else}
-                  <span class="text-gray-300">-</span>
+                  <span class="text-muted-foreground/40">-</span>
                 {/if}
-              </td>
-              <td class="text-right font-medium {p.piutang > 0 ? 'text-orange-600' : 'text-gray-500'}">
+              </Table.Cell>
+              <Table.Cell class="text-right font-medium {p.piutang > 0 ? 'text-orange-600' : 'text-muted-foreground'}">
                 {formatCurrency(p.piutang)}
-              </td>
-              <td>
+              </Table.Cell>
+              <Table.Cell>
                 <div class="flex items-center justify-center gap-1">
-                  <button class="btn-ghost btn-sm p-1.5" onclick={() => openEdit(p)}><Pencil size={14} /></button>
-                  <button class="btn-ghost btn-sm p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50" onclick={() => { deletingId = p.id; showConfirm = true; }}><Trash2 size={14} /></button>
+                  <Button variant="ghost" size="icon-sm" onclick={() => openEdit(p)}><Pencil size={14} /></Button>
+                  <Button variant="ghost" size="icon-sm" class="text-destructive hover:text-destructive hover:bg-destructive/10" onclick={() => { deletingId = p.id; showConfirm = true; }}><Trash2 size={14} /></Button>
                 </div>
-              </td>
-            </tr>
+              </Table.Cell>
+            </Table.Row>
           {/each}
         {/if}
-      </tbody>
-    </table>
+      </Table.Body>
+    </Table.Root>
   </div>
 </div>
 
@@ -156,33 +160,33 @@
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label" for="plg-kode">Kode *</label>
-          <input id="plg-kode" class="input" placeholder="PLG-001" bind:value={form.kode} />
+          <Label for="plg-kode">Kode *</Label>
+          <Input id="plg-kode" placeholder="PLG-001" bind:value={form.kode} />
         </div>
         <div>
-          <label class="label" for="plg-nama">Nama *</label>
-          <input id="plg-nama" class="input" placeholder="Nama pelanggan" bind:value={form.nama} />
+          <Label for="plg-nama">Nama *</Label>
+          <Input id="plg-nama" placeholder="Nama pelanggan" bind:value={form.nama} />
         </div>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label" for="plg-telepon">Telepon</label>
-          <input id="plg-telepon" class="input" placeholder="08xx" bind:value={form.telepon} />
+          <Label for="plg-telepon">Telepon</Label>
+          <Input id="plg-telepon" placeholder="08xx" bind:value={form.telepon} />
         </div>
         <div>
-          <label class="label" for="plg-email">Email</label>
-          <input id="plg-email" class="input" type="email" placeholder="email@domain.com" bind:value={form.email} />
+          <Label for="plg-email">Email</Label>
+          <Input id="plg-email" type="email" placeholder="email@domain.com" bind:value={form.email} />
         </div>
       </div>
       <div>
-        <label class="label" for="plg-alamat">Alamat</label>
-        <textarea id="plg-alamat" class="input" rows="2" placeholder="Alamat lengkap..." bind:value={form.alamat}></textarea>
+        <Label for="plg-alamat">Alamat</Label>
+        <textarea id="plg-alamat" class="flex min-h-15 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" rows="2" placeholder="Alamat lengkap..." bind:value={form.alamat}></textarea>
       </div>
     </div>
   {/snippet}
   {#snippet footer()}
-    <button class="btn-secondary" onclick={() => showModal = false}>Batal</button>
-    <button class="btn-primary" onclick={save} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+    <Button variant="outline" onclick={() => showModal = false}>Batal</Button>
+    <Button onclick={save} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</Button>
   {/snippet}
 </Modal>
 

@@ -19,14 +19,17 @@ export const updateState = $state<{
   update: null,
 });
 
-export async function checkForUpdate() {
+/** auto = true: langsung unduh, pasang, dan restart tanpa menunggu konfirmasi pengguna. */
+export async function checkForUpdate(auto = false) {
+  if (updateState.phase === 'downloading' || updateState.phase === 'done') return;
   try {
     const update = await check();
-    if (update?.available) {
+    if (update) {
       updateState.available = true;
       updateState.version = update.version;
       updateState.notes = update.body ?? null;
       updateState.update = update;
+      if (auto) await downloadAndInstall();
     }
   } catch {
     // Gagal cek update (offline / endpoint belum dikonfigurasi) — abaikan saja
@@ -70,4 +73,12 @@ export async function downloadAndInstall() {
 
 export function dismissUpdate() {
   updateState.available = false;
+  updateState.phase = 'idle';
+}
+
+/** Cek ulang berkala untuk aplikasi yang dibiarkan terbuka lama (mis. komputer lab); hanya memberi tahu, tidak memaksa restart. */
+export function startPeriodicUpdateCheck(intervalMs = 30 * 60 * 1000) {
+  return setInterval(() => {
+    if (!updateState.available) checkForUpdate(false);
+  }, intervalMs);
 }

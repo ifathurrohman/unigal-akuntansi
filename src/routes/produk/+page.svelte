@@ -5,6 +5,11 @@
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
   import { callCommand, showNotification, formatCurrency, formatNumber } from '$lib/stores/app.svelte';
   import type { Produk, ProdukInput } from '$lib/types';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import { Input } from '$lib/components/ui/input/index.js';
+  import { Label } from '$lib/components/ui/label/index.js';
+  import { Badge } from '$lib/components/ui/badge/index.js';
+  import * as Table from '$lib/components/ui/table/index.js';
 
   let list = $state<Produk[]>([]);
   let loading = $state(true);
@@ -78,68 +83,68 @@
 </script>
 
 <div class="p-6">
-  <div class="page-header">
+  <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="page-title">Produk & Persediaan</h1>
-      <p class="page-subtitle">{list.length} produk terdaftar</p>
+      <h1 class="text-xl font-semibold text-foreground">Produk & Persediaan</h1>
+      <p class="text-sm text-muted-foreground mt-0.5">{list.length} produk terdaftar</p>
     </div>
-    <button class="btn-primary" onclick={openCreate}><Plus size={16} /> Tambah Produk</button>
+    <Button onclick={openCreate}><Plus size={16} /> Tambah Produk</Button>
   </div>
 
   <div class="flex items-center gap-3 mb-4">
     <div class="relative flex-1 max-w-sm">
-      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-      <input class="input pl-9" placeholder="Cari produk..." bind:value={search} />
+      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <Input class="pl-9" placeholder="Cari produk..." bind:value={search} />
     </div>
   </div>
 
-  <div class="table-wrapper">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Kode</th>
-          <th>Nama Produk</th>
-          <th>Satuan</th>
-          <th class="text-right">Harga Beli</th>
-          <th class="text-right">Harga Jual</th>
-          <th class="text-right">Stok</th>
-          <th class="text-center">Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
+  <div class="overflow-x-auto rounded-xl border border-border">
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.Head>Kode</Table.Head>
+          <Table.Head>Nama Produk</Table.Head>
+          <Table.Head>Satuan</Table.Head>
+          <Table.Head class="text-right">Harga Beli</Table.Head>
+          <Table.Head class="text-right">Harga Jual</Table.Head>
+          <Table.Head class="text-right">Stok</Table.Head>
+          <Table.Head class="text-center">Aksi</Table.Head>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
         {#if loading}
-          <tr><td colspan="7" class="text-center py-12 text-gray-400">Memuat data...</td></tr>
+          <Table.Row><Table.Cell colspan={7} class="text-center py-12 text-muted-foreground">Memuat data...</Table.Cell></Table.Row>
         {:else if filtered.length === 0}
-          <tr><td colspan="7" class="text-center py-12 text-gray-400">Tidak ada data</td></tr>
+          <Table.Row><Table.Cell colspan={7} class="text-center py-12 text-muted-foreground">Tidak ada data</Table.Cell></Table.Row>
         {:else}
           {#each filtered as p}
-            <tr>
-              <td class="font-mono text-xs font-medium text-gray-500">{p.kode}</td>
-              <td>
+            <Table.Row>
+              <Table.Cell class="font-mono text-xs font-medium text-muted-foreground">{p.kode}</Table.Cell>
+              <Table.Cell>
                 <div class="flex items-center gap-2">
                   <div class="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
                     <Package size={13} class="text-teal-600" />
                   </div>
-                  <span class="font-medium text-gray-900">{p.nama}</span>
+                  <span class="font-medium text-foreground">{p.nama}</span>
                 </div>
-              </td>
-              <td><span class="badge-gray">{p.satuan}</span></td>
-              <td class="text-right text-gray-600">{formatCurrency(p.harga_beli)}</td>
-              <td class="text-right font-medium text-gray-900">{formatCurrency(p.harga_jual)}</td>
-              <td class="text-right font-medium {p.stok <= 0 ? 'text-red-500' : p.stok < 10 ? 'text-yellow-600' : 'text-green-600'}">
+              </Table.Cell>
+              <Table.Cell><Badge variant="secondary">{p.satuan}</Badge></Table.Cell>
+              <Table.Cell class="text-right text-muted-foreground">{formatCurrency(p.harga_beli)}</Table.Cell>
+              <Table.Cell class="text-right font-medium text-foreground">{formatCurrency(p.harga_jual)}</Table.Cell>
+              <Table.Cell class="text-right font-medium {p.stok <= 0 ? 'text-red-500' : p.stok < 10 ? 'text-yellow-600' : 'text-green-600'}">
                 {formatNumber(p.stok)}
-              </td>
-              <td>
+              </Table.Cell>
+              <Table.Cell>
                 <div class="flex items-center justify-center gap-1">
-                  <button class="btn-ghost btn-sm p-1.5" onclick={() => openEdit(p)}><Pencil size={14} /></button>
-                  <button class="btn-ghost btn-sm p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50" onclick={() => { deletingId = p.id; showConfirm = true; }}><Trash2 size={14} /></button>
+                  <Button variant="ghost" size="icon-sm" onclick={() => openEdit(p)}><Pencil size={14} /></Button>
+                  <Button variant="ghost" size="icon-sm" class="text-destructive hover:text-destructive hover:bg-destructive/10" onclick={() => { deletingId = p.id; showConfirm = true; }}><Trash2 size={14} /></Button>
                 </div>
-              </td>
-            </tr>
+              </Table.Cell>
+            </Table.Row>
           {/each}
         {/if}
-      </tbody>
-    </table>
+      </Table.Body>
+    </Table.Root>
   </div>
 </div>
 
@@ -148,39 +153,39 @@
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label" for="prd-kode">Kode *</label>
-          <input id="prd-kode" class="input" placeholder="PRD-001" bind:value={form.kode} />
+          <Label for="prd-kode">Kode *</Label>
+          <Input id="prd-kode" placeholder="PRD-001" bind:value={form.kode} />
         </div>
         <div>
-          <label class="label" for="prd-satuan">Satuan *</label>
-          <input id="prd-satuan" class="input" placeholder="pcs, kg, box..." bind:value={form.satuan} />
+          <Label for="prd-satuan">Satuan *</Label>
+          <Input id="prd-satuan" placeholder="pcs, kg, box..." bind:value={form.satuan} />
         </div>
       </div>
       <div>
-        <label class="label" for="prd-nama">Nama Produk *</label>
-        <input id="prd-nama" class="input" placeholder="Nama produk" bind:value={form.nama} />
+        <Label for="prd-nama">Nama Produk *</Label>
+        <Input id="prd-nama" placeholder="Nama produk" bind:value={form.nama} />
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label" for="prd-harga-beli">Harga Beli</label>
-          <input id="prd-harga-beli" class="input" type="number" placeholder="0" bind:value={form.harga_beli} />
+          <Label for="prd-harga-beli">Harga Beli</Label>
+          <Input id="prd-harga-beli" type="number" placeholder="0" bind:value={form.harga_beli} />
         </div>
         <div>
-          <label class="label" for="prd-harga-jual">Harga Jual</label>
-          <input id="prd-harga-jual" class="input" type="number" placeholder="0" bind:value={form.harga_jual} />
+          <Label for="prd-harga-jual">Harga Jual</Label>
+          <Input id="prd-harga-jual" type="number" placeholder="0" bind:value={form.harga_jual} />
         </div>
       </div>
       {#if !editingId}
         <div>
-          <label class="label" for="prd-stok">Stok Awal</label>
-          <input id="prd-stok" class="input" type="number" placeholder="0" bind:value={form.stok} />
+          <Label for="prd-stok">Stok Awal</Label>
+          <Input id="prd-stok" type="number" placeholder="0" bind:value={form.stok} />
         </div>
       {/if}
     </div>
   {/snippet}
   {#snippet footer()}
-    <button class="btn-secondary" onclick={() => showModal = false}>Batal</button>
-    <button class="btn-primary" onclick={save} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+    <Button variant="outline" onclick={() => showModal = false}>Batal</Button>
+    <Button onclick={save} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</Button>
   {/snippet}
 </Modal>
 

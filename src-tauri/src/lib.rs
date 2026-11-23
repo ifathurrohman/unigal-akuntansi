@@ -46,6 +46,14 @@ pub fn run() {
             commands::laporan::get_dashboard,
             commands::laporan::get_laba_rugi,
             commands::laporan::get_neraca,
+            commands::pengaturan::get_perusahaan,
+            commands::pengaturan::save_perusahaan,
+            commands::pengaturan::get_tanggal_kerja,
+            commands::pengaturan::get_periode,
+            commands::pengaturan::get_periode_aktif,
+            commands::pengaturan::update_periode,
+            commands::pengaturan::tutup_periode,
+            commands::pengaturan::get_arsip_laporan,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

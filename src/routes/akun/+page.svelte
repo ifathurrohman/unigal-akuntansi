@@ -1,10 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Plus, Search, Pencil, Trash2, FileText } from 'lucide-svelte';
+  import { Plus, Search, Pencil, Trash2, FileText, X } from 'lucide-svelte';
   import Modal from '$lib/components/Modal.svelte';
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
   import { callCommand, showNotification, formatCurrency } from '$lib/stores/app.svelte';
   import type { Akun, AkunInput } from '$lib/types';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import { Input } from '$lib/components/ui/input/index.js';
+  import { Label } from '$lib/components/ui/label/index.js';
+  import * as Select from '$lib/components/ui/select/index.js';
+  import { Badge } from '$lib/components/ui/badge/index.js';
+  import * as Table from '$lib/components/ui/table/index.js';
 
   let akun = $state<Akun[]>([]);
   let loading = $state(true);
@@ -23,7 +29,8 @@
     tipe: 'Aset',
     sub_tipe: null,
     saldo_normal: 'Debit',
-    saldo: 0,
+    header: false,
+    kas_bank: false,
   });
 
   const tipeOptions = ['Aset', 'Kewajiban', 'Modal', 'Pendapatan', 'Beban'];
@@ -52,13 +59,13 @@
 
   function openCreate() {
     editingId = null;
-    form = { kode: '', nama: '', tipe: 'Aset', sub_tipe: null, saldo_normal: 'Debit', saldo: 0 };
+    form = { kode: '', nama: '', tipe: 'Aset', sub_tipe: null, saldo_normal: 'Debit', header: false, kas_bank: false };
     showModal = true;
   }
 
   function openEdit(a: Akun) {
     editingId = a.id;
-    form = { kode: a.kode, nama: a.nama, tipe: a.tipe, sub_tipe: a.sub_tipe, saldo_normal: a.saldo_normal };
+    form = { kode: a.kode, nama: a.nama, tipe: a.tipe, sub_tipe: a.sub_tipe, saldo_normal: a.saldo_normal, header: a.header, kas_bank: a.kas_bank };
     showModal = true;
   }
 
@@ -106,94 +113,119 @@
     }
   }
 
-  function getTipeBadge(tipe: string) {
+  function getTipeBadgeClass(tipe: string) {
     const map: Record<string, string> = {
-      Aset: 'badge-blue', Kewajiban: 'badge-red', Modal: 'badge-green',
-      Pendapatan: 'badge-yellow', Beban: 'badge-gray',
+      Aset: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+      Kewajiban: 'bg-red-100 text-red-700 hover:bg-red-100',
+      Modal: 'bg-green-100 text-green-700 hover:bg-green-100',
+      Pendapatan: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100',
+      Beban: '',
     };
-    return map[tipe] || 'badge-gray';
+    return map[tipe] ?? '';
   }
 
   onMount(load);
 </script>
 
 <div class="p-6">
-  <div class="page-header">
+  <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="page-title">Daftar Akun</h1>
-      <p class="page-subtitle">Chart of Accounts (CoA)</p>
+      <h1 class="text-xl font-semibold text-foreground">Daftar Akun</h1>
+      <p class="text-sm text-muted-foreground mt-0.5">Chart of Accounts (CoA)</p>
     </div>
-    <button class="btn-primary" onclick={openCreate}>
+    <Button onclick={openCreate}>
       <Plus size={16} /> Tambah Akun
-    </button>
+    </Button>
   </div>
 
   <!-- Filters -->
   <div class="flex items-center gap-3 mb-4">
     <div class="relative flex-1 max-w-sm">
-      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-      <input class="input pl-9" placeholder="Cari kode atau nama akun..." bind:value={search} />
+      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <Input class="pl-9" placeholder="Cari kode atau nama akun..." bind:value={search} />
     </div>
-    <select class="input w-40" bind:value={filterTipe}>
-      <option value="">Semua Tipe</option>
-      {#each tipeOptions as t}
-        <option value={t}>{t}</option>
-      {/each}
-    </select>
+    <Select.Root bind:value={filterTipe}>
+      <Select.Trigger class="w-40">
+        <Select.Value placeholder="Semua Tipe" />
+      </Select.Trigger>
+      <Select.Content>
+        <Select.Item value="" label="Semua Tipe">Semua Tipe</Select.Item>
+        {#each tipeOptions as t}
+          <Select.Item value={t}>{t}</Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
+    {#if search || filterTipe}
+      <Button variant="ghost" size="sm" onclick={() => { search = ''; filterTipe = ''; }} class="text-muted-foreground gap-1.5">
+        <X size={14} /> Reset Filter
+      </Button>
+    {/if}
   </div>
 
   <!-- Table -->
-  <div class="table-wrapper">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Kode</th>
-          <th>Nama Akun</th>
-          <th>Tipe</th>
-          <th>Saldo Normal</th>
-          <th class="text-right">Saldo</th>
-          <th class="text-center">Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
+  <div class="overflow-x-auto rounded-xl border border-border">
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.Head>Kode</Table.Head>
+          <Table.Head>Nama Akun</Table.Head>
+          <Table.Head>Tipe</Table.Head>
+          <Table.Head>Saldo Normal</Table.Head>
+          <Table.Head class="text-right">Saldo</Table.Head>
+          <Table.Head class="text-center">Aksi</Table.Head>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
         {#if loading}
-          <tr>
-            <td colspan="6" class="text-center py-12 text-gray-400">Memuat data...</td>
-          </tr>
+          <Table.Row>
+            <Table.Cell colspan={6} class="text-center py-12 text-muted-foreground">Memuat data...</Table.Cell>
+          </Table.Row>
         {:else if filtered.length === 0}
-          <tr>
-            <td colspan="6" class="text-center py-12 text-gray-400">Tidak ada data</td>
-          </tr>
+          <Table.Row>
+            <Table.Cell colspan={6} class="text-center py-12 text-muted-foreground">Tidak ada data</Table.Cell>
+          </Table.Row>
         {:else}
           {#each filtered as a}
-            <tr>
-              <td class="font-mono text-xs font-medium text-gray-600">{a.kode}</td>
-              <td class="font-medium">{a.nama}</td>
-              <td><span class={getTipeBadge(a.tipe)}>{a.tipe}</span></td>
-              <td>
-                <span class={a.saldo_normal === 'Debit' ? 'badge-blue' : 'badge-green'}>{a.saldo_normal}</span>
-              </td>
-              <td class="text-right font-medium {a.saldo < 0 ? 'text-red-600' : 'text-gray-900'}">
+            <Table.Row>
+              <Table.Cell class="font-mono text-xs font-medium text-muted-foreground">{a.kode}</Table.Cell>
+              <Table.Cell class="font-medium {a.header ? 'font-bold' : ''}">
+                {a.nama}
+                {#if a.header}<Badge variant="outline" class="ml-2">Induk</Badge>{/if}
+                {#if a.kas_bank}<Badge variant="outline" class="ml-2">Kas/Bank</Badge>{/if}
+              </Table.Cell>
+              <Table.Cell>
+                {#if a.tipe === 'Beban'}
+                  <Badge variant="secondary">{a.tipe}</Badge>
+                {:else}
+                  <Badge class={getTipeBadgeClass(a.tipe)}>{a.tipe}</Badge>
+                {/if}
+              </Table.Cell>
+              <Table.Cell>
+                <Badge class={a.saldo_normal === 'Debit' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' : 'bg-green-100 text-green-700 hover:bg-green-100'}>
+                  {a.saldo_normal}
+                </Badge>
+              </Table.Cell>
+              <Table.Cell class="text-right font-medium {a.saldo < 0 ? 'text-red-600' : 'text-foreground'}">
                 {formatCurrency(a.saldo)}
-              </td>
-              <td>
+              </Table.Cell>
+              <Table.Cell>
                 <div class="flex items-center justify-center gap-1">
-                  <button class="btn-ghost btn-sm p-1.5" onclick={() => openEdit(a)} title="Edit">
+                  <Button variant="ghost" size="icon-sm" onclick={() => openEdit(a)} title="Edit">
                     <Pencil size={14} />
-                  </button>
-                  <button class="btn-ghost btn-sm p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50" onclick={() => confirmDelete(a.id)} title="Hapus">
+                  </Button>
+                  <Button variant="ghost" size="icon-sm" class="text-destructive hover:text-destructive hover:bg-destructive/10" onclick={() => confirmDelete(a.id)} title="Hapus">
                     <Trash2 size={14} />
-                  </button>
+                  </Button>
                 </div>
-              </td>
-            </tr>
+              </Table.Cell>
+            </Table.Row>
           {/each}
         {/if}
-      </tbody>
-    </table>
+      </Table.Body>
+    </Table.Root>
   </div>
 
-  <div class="mt-3 text-xs text-gray-400">{filtered.length} akun ditemukan</div>
+  <div class="mt-3 text-xs text-muted-foreground">{filtered.length} akun ditemukan</div>
 </div>
 
 <!-- Modal Tambah/Edit -->
@@ -202,48 +234,69 @@
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label" for="akun-kode">Kode Akun *</label>
-          <input id="akun-kode" class="input" placeholder="1-1001" bind:value={form.kode} />
+          <Label for="akun-kode">Kode Akun *</Label>
+          <Input id="akun-kode" placeholder="1-1001" bind:value={form.kode} />
         </div>
         <div>
-          <label class="label" for="akun-tipe">Tipe *</label>
-          <select id="akun-tipe" class="input" bind:value={form.tipe} onchange={onTipeChange}>
-            {#each tipeOptions as t}
-              <option value={t}>{t}</option>
-            {/each}
-          </select>
+          <Label for="akun-tipe">Tipe *</Label>
+          <Select.Root bind:value={form.tipe} onValueChange={onTipeChange}>
+            <Select.Trigger class="w-full">
+              <Select.Value />
+            </Select.Trigger>
+            <Select.Content>
+              {#each tipeOptions as t}
+                <Select.Item value={t}>{t}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
         </div>
       </div>
       <div>
-        <label class="label" for="akun-nama">Nama Akun *</label>
-        <input id="akun-nama" class="input" placeholder="Masukkan nama akun..." bind:value={form.nama} />
+        <Label for="akun-nama">Nama Akun *</Label>
+        <Input id="akun-nama" placeholder="Masukkan nama akun..." bind:value={form.nama} />
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label" for="akun-sub-tipe">Sub Tipe</label>
-          <input id="akun-sub-tipe" class="input" placeholder="Lancar, Tetap, dll." bind:value={form.sub_tipe} />
+          <Label for="akun-sub-tipe">Sub Tipe</Label>
+          <Input id="akun-sub-tipe" placeholder="Lancar, Tetap, dll." bind:value={form.sub_tipe} />
         </div>
         <div>
-          <label class="label" for="akun-saldo-normal">Saldo Normal</label>
-          <select id="akun-saldo-normal" class="input" bind:value={form.saldo_normal}>
-            <option value="Debit">Debit</option>
-            <option value="Kredit">Kredit</option>
-          </select>
+          <Label for="akun-saldo-normal">Saldo Normal</Label>
+          <Select.Root bind:value={form.saldo_normal}>
+            <Select.Trigger class="w-full">
+              <Select.Value />
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="Debit">Debit</Select.Item>
+              <Select.Item value="Kredit">Kredit</Select.Item>
+            </Select.Content>
+          </Select.Root>
         </div>
       </div>
+      <div class="space-y-2">
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" bind:checked={form.header} onchange={() => { if (form.header) form.kas_bank = false; }} />
+          Akun induk / grup (hanya pengelompok, tidak dipakai dalam transaksi)
+        </label>
+        {#if !form.header && form.tipe === 'Aset'}
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" bind:checked={form.kas_bank} />
+            Akun Kas / Bank (muncul di menu Kas & Bank)
+          </label>
+        {/if}
+      </div>
       {#if !editingId}
-        <div>
-          <label class="label" for="akun-saldo">Saldo Awal</label>
-          <input id="akun-saldo" class="input" type="number" placeholder="0" bind:value={form.saldo} />
-        </div>
+        <p class="text-xs text-muted-foreground">
+          Saldo awal tidak diisi di sini. Catat melalui Jurnal Umum dengan tipe "Saldo Awal".
+        </p>
       {/if}
     </div>
   {/snippet}
   {#snippet footer()}
-    <button class="btn-secondary" onclick={() => showModal = false}>Batal</button>
-    <button class="btn-primary" onclick={save} disabled={saving}>
+    <Button variant="outline" onclick={() => showModal = false}>Batal</Button>
+    <Button onclick={save} disabled={saving}>
       {saving ? 'Menyimpan...' : 'Simpan'}
-    </button>
+    </Button>
   {/snippet}
 </Modal>
 

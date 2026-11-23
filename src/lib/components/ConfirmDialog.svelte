@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { AlertTriangle } from 'lucide-svelte';
-  import Modal from './Modal.svelte';
+  import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 
   interface Props {
     open: boolean;
@@ -13,7 +12,7 @@
 
   let {
     open,
-    title = 'Konfirmasi',
+    title = 'Konfirmasi Hapus',
     message,
     onConfirm,
     onCancel,
@@ -21,19 +20,21 @@
   }: Props = $props();
 </script>
 
-<Modal {open} {title} onClose={onCancel} maxWidth="max-w-sm">
-  {#snippet children()}
-    <div class="flex items-start gap-3">
-      <div class="shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-        <AlertTriangle size={20} class="text-red-600" />
-      </div>
-      <p class="text-sm text-gray-600 leading-relaxed">{message}</p>
-    </div>
-  {/snippet}
-  {#snippet footer()}
-    <button class="btn-secondary" onclick={onCancel} disabled={loading}>Batal</button>
-    <button class="btn-danger" onclick={onConfirm} disabled={loading}>
-      {loading ? 'Menghapus...' : 'Hapus'}
-    </button>
-  {/snippet}
-</Modal>
+<AlertDialog.Root {open} onOpenChange={(o) => { if (!o) onCancel(); }}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>{title}</AlertDialog.Title>
+      <AlertDialog.Description>{message}</AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel onclick={onCancel} disabled={loading}>Batal</AlertDialog.Cancel>
+      <AlertDialog.Action
+        variant="destructive"
+        onclick={onConfirm}
+        disabled={loading}
+      >
+        {loading ? 'Menghapus...' : 'Hapus'}
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>

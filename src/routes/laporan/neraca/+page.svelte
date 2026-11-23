@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Scale, Printer } from 'lucide-svelte';
-  import { callCommand, formatCurrency } from '$lib/stores/app.svelte';
+  import { callCommand, formatCurrency, namaPerusahaan } from '$lib/stores/app.svelte';
   import type { NeracaItem } from '$lib/types';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import * as Card from '$lib/components/ui/card/index.js';
 
   let items = $state<NeracaItem[]>([]);
   let loading = $state(true);
@@ -27,19 +29,20 @@
 </script>
 
 <div class="p-6">
-  <div class="page-header">
+  <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="page-title">Neraca</h1>
-      <p class="page-subtitle">Balance Sheet — Per hari ini</p>
+      <p class="text-sm font-medium text-muted-foreground">{namaPerusahaan()}</p>
+      <h1 class="text-xl font-semibold text-foreground">Neraca</h1>
+      <p class="text-sm text-muted-foreground mt-0.5">Balance Sheet — Per hari ini</p>
     </div>
-    <button class="btn-secondary" onclick={() => window.print()}>
+    <Button variant="outline" onclick={() => window.print()}>
       <Printer size={16} /> Cetak
-    </button>
+    </Button>
   </div>
 
   {#if loading}
     <div class="flex items-center justify-center h-48">
-      <div class="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+      <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
     </div>
   {:else}
     <!-- Balance indicator -->
@@ -53,45 +56,45 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- ASET -->
-      <div class="card overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 bg-blue-50">
+      <Card.Root class="overflow-hidden">
+        <div class="px-5 py-4 border-b border-border bg-blue-50">
           <h3 class="text-sm font-bold text-blue-900">ASET</h3>
         </div>
 
         {#if aset.filter(i => i.sub_tipe === 'Lancar').length > 0}
-          <div class="px-5 py-2 bg-gray-50 border-b border-gray-100">
-            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Aset Lancar</span>
+          <div class="px-5 py-2 bg-muted/30 border-b border-border">
+            <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aset Lancar</span>
           </div>
           {#each aset.filter(i => i.sub_tipe === 'Lancar') as item}
-            <div class="flex justify-between items-center px-5 py-2.5 border-b border-gray-50 hover:bg-gray-50">
+            <div class="flex justify-between items-center px-5 py-2.5 border-b border-border hover:bg-muted/30">
               <div>
-                <span class="text-xs text-gray-400 font-mono mr-2">{item.kode}</span>
-                <span class="text-sm text-gray-700">{item.nama}</span>
+                <span class="text-xs text-muted-foreground font-mono mr-2">{item.kode}</span>
+                <span class="text-sm text-foreground">{item.nama}</span>
               </div>
-              <span class="text-sm font-medium {item.saldo < 0 ? 'text-red-600' : 'text-gray-900'}">{formatCurrency(item.saldo)}</span>
+              <span class="text-sm font-medium {item.saldo < 0 ? 'text-red-600' : 'text-foreground'}">{formatCurrency(item.saldo)}</span>
             </div>
           {/each}
-          <div class="flex justify-between items-center px-5 py-2.5 border-b border-gray-200 bg-blue-50/50">
-            <span class="text-xs font-semibold text-gray-600">Jumlah Aset Lancar</span>
+          <div class="flex justify-between items-center px-5 py-2.5 border-b border-border bg-blue-50/50">
+            <span class="text-xs font-semibold text-muted-foreground">Jumlah Aset Lancar</span>
             <span class="text-sm font-bold text-blue-700">{formatCurrency(aset.filter(i => i.sub_tipe === 'Lancar').reduce((s,i) => s+i.saldo,0))}</span>
           </div>
         {/if}
 
         {#if aset.filter(i => i.sub_tipe === 'Tetap').length > 0}
-          <div class="px-5 py-2 bg-gray-50 border-b border-gray-100">
-            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Aset Tetap</span>
+          <div class="px-5 py-2 bg-muted/30 border-b border-border">
+            <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aset Tetap</span>
           </div>
           {#each aset.filter(i => i.sub_tipe === 'Tetap') as item}
-            <div class="flex justify-between items-center px-5 py-2.5 border-b border-gray-50 hover:bg-gray-50">
+            <div class="flex justify-between items-center px-5 py-2.5 border-b border-border hover:bg-muted/30">
               <div>
-                <span class="text-xs text-gray-400 font-mono mr-2">{item.kode}</span>
-                <span class="text-sm text-gray-700">{item.nama}</span>
+                <span class="text-xs text-muted-foreground font-mono mr-2">{item.kode}</span>
+                <span class="text-sm text-foreground">{item.nama}</span>
               </div>
-              <span class="text-sm font-medium {item.saldo < 0 ? 'text-red-600' : 'text-gray-900'}">{formatCurrency(item.saldo)}</span>
+              <span class="text-sm font-medium {item.saldo < 0 ? 'text-red-600' : 'text-foreground'}">{formatCurrency(item.saldo)}</span>
             </div>
           {/each}
-          <div class="flex justify-between items-center px-5 py-2.5 border-b border-gray-200 bg-blue-50/50">
-            <span class="text-xs font-semibold text-gray-600">Jumlah Aset Tetap</span>
+          <div class="flex justify-between items-center px-5 py-2.5 border-b border-border bg-blue-50/50">
+            <span class="text-xs font-semibold text-muted-foreground">Jumlah Aset Tetap</span>
             <span class="text-sm font-bold text-blue-700">{formatCurrency(aset.filter(i => i.sub_tipe === 'Tetap').reduce((s,i) => s+i.saldo,0))}</span>
           </div>
         {/if}
@@ -100,58 +103,58 @@
           <span class="text-sm font-bold text-blue-900">TOTAL ASET</span>
           <span class="text-base font-bold text-blue-900">{formatCurrency(totalAset)}</span>
         </div>
-      </div>
+      </Card.Root>
 
       <!-- KEWAJIBAN + MODAL -->
       <div class="space-y-4">
         <!-- Kewajiban -->
-        <div class="card overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-100 bg-red-50">
+        <Card.Root class="overflow-hidden">
+          <div class="px-5 py-4 border-b border-border bg-red-50">
             <h3 class="text-sm font-bold text-red-900">KEWAJIBAN</h3>
           </div>
           {#each kewajiban as item}
-            <div class="flex justify-between items-center px-5 py-2.5 border-b border-gray-50 hover:bg-gray-50">
+            <div class="flex justify-between items-center px-5 py-2.5 border-b border-border hover:bg-muted/30">
               <div>
-                <span class="text-xs text-gray-400 font-mono mr-2">{item.kode}</span>
-                <span class="text-sm text-gray-700">{item.nama}</span>
+                <span class="text-xs text-muted-foreground font-mono mr-2">{item.kode}</span>
+                <span class="text-sm text-foreground">{item.nama}</span>
               </div>
-              <span class="text-sm font-medium text-gray-900">{formatCurrency(item.saldo)}</span>
+              <span class="text-sm font-medium text-foreground">{formatCurrency(item.saldo)}</span>
             </div>
           {:else}
-            <div class="px-5 py-4 text-sm text-gray-400 text-center">Tidak ada kewajiban</div>
+            <div class="px-5 py-4 text-sm text-muted-foreground text-center">Tidak ada kewajiban</div>
           {/each}
           <div class="flex justify-between items-center px-5 py-3 bg-red-50">
             <span class="text-sm font-bold text-red-900">Total Kewajiban</span>
             <span class="text-sm font-bold text-red-700">{formatCurrency(totalKewajiban)}</span>
           </div>
-        </div>
+        </Card.Root>
 
         <!-- Modal -->
-        <div class="card overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-100 bg-green-50">
+        <Card.Root class="overflow-hidden">
+          <div class="px-5 py-4 border-b border-border bg-green-50">
             <h3 class="text-sm font-bold text-green-900">MODAL</h3>
           </div>
           {#each modal as item}
-            <div class="flex justify-between items-center px-5 py-2.5 border-b border-gray-50 hover:bg-gray-50">
+            <div class="flex justify-between items-center px-5 py-2.5 border-b border-border hover:bg-muted/30">
               <div>
-                <span class="text-xs text-gray-400 font-mono mr-2">{item.kode}</span>
-                <span class="text-sm text-gray-700">{item.nama}</span>
+                <span class="text-xs text-muted-foreground font-mono mr-2">{item.kode}</span>
+                <span class="text-sm text-foreground">{item.nama}</span>
               </div>
-              <span class="text-sm font-medium text-gray-900">{formatCurrency(item.saldo)}</span>
+              <span class="text-sm font-medium text-foreground">{formatCurrency(item.saldo)}</span>
             </div>
           {:else}
-            <div class="px-5 py-4 text-sm text-gray-400 text-center">Tidak ada modal</div>
+            <div class="px-5 py-4 text-sm text-muted-foreground text-center">Tidak ada modal</div>
           {/each}
           <div class="flex justify-between items-center px-5 py-3 bg-green-50">
             <span class="text-sm font-bold text-green-900">Total Modal</span>
             <span class="text-sm font-bold text-green-700">{formatCurrency(totalModal)}</span>
           </div>
-        </div>
+        </Card.Root>
 
-        <div class="card px-5 py-3 flex justify-between items-center bg-gray-900">
+        <Card.Root class="px-5 py-3 flex justify-between items-center bg-gray-900">
           <span class="text-sm font-bold text-white">TOTAL KEWAJIBAN + MODAL</span>
           <span class="text-base font-bold text-white">{formatCurrency(totalKewMod)}</span>
-        </div>
+        </Card.Root>
       </div>
     </div>
   {/if}

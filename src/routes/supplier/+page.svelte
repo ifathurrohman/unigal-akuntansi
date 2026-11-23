@@ -5,6 +5,10 @@
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
   import { callCommand, showNotification, formatCurrency } from '$lib/stores/app.svelte';
   import type { Supplier, SupplierInput } from '$lib/types';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import { Input } from '$lib/components/ui/input/index.js';
+  import { Label } from '$lib/components/ui/label/index.js';
+  import * as Table from '$lib/components/ui/table/index.js';
 
   let list = $state<Supplier[]>([]);
   let loading = $state(true);
@@ -79,65 +83,65 @@
 </script>
 
 <div class="p-6">
-  <div class="page-header">
+  <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="page-title">Supplier</h1>
-      <p class="page-subtitle">{list.length} supplier terdaftar</p>
+      <h1 class="text-xl font-semibold text-foreground">Supplier</h1>
+      <p class="text-sm text-muted-foreground mt-0.5">{list.length} supplier terdaftar</p>
     </div>
-    <button class="btn-primary" onclick={openCreate}><Plus size={16} /> Tambah Supplier</button>
+    <Button onclick={openCreate}><Plus size={16} /> Tambah Supplier</Button>
   </div>
 
   <div class="flex items-center gap-3 mb-4">
     <div class="relative flex-1 max-w-sm">
-      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-      <input class="input pl-9" placeholder="Cari supplier..." bind:value={search} />
+      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <Input class="pl-9" placeholder="Cari supplier..." bind:value={search} />
     </div>
   </div>
 
-  <div class="table-wrapper">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Kode</th>
-          <th>Nama</th>
-          <th>Telepon</th>
-          <th>Email</th>
-          <th class="text-right">Hutang</th>
-          <th class="text-center">Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
+  <div class="overflow-x-auto rounded-xl border border-border">
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.Head>Kode</Table.Head>
+          <Table.Head>Nama</Table.Head>
+          <Table.Head>Telepon</Table.Head>
+          <Table.Head>Email</Table.Head>
+          <Table.Head class="text-right">Hutang</Table.Head>
+          <Table.Head class="text-center">Aksi</Table.Head>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
         {#if loading}
-          <tr><td colspan="6" class="text-center py-12 text-gray-400">Memuat data...</td></tr>
+          <Table.Row><Table.Cell colspan={6} class="text-center py-12 text-muted-foreground">Memuat data...</Table.Cell></Table.Row>
         {:else if filtered.length === 0}
-          <tr><td colspan="6" class="text-center py-12 text-gray-400">Tidak ada data</td></tr>
+          <Table.Row><Table.Cell colspan={6} class="text-center py-12 text-muted-foreground">Tidak ada data</Table.Cell></Table.Row>
         {:else}
           {#each filtered as s}
-            <tr>
-              <td class="font-mono text-xs font-medium text-gray-500">{s.kode}</td>
-              <td class="font-medium text-gray-900">{s.nama}</td>
-              <td>
+            <Table.Row>
+              <Table.Cell class="font-mono text-xs font-medium text-muted-foreground">{s.kode}</Table.Cell>
+              <Table.Cell class="font-medium text-foreground">{s.nama}</Table.Cell>
+              <Table.Cell>
                 {#if s.telepon}
-                  <div class="flex items-center gap-1 text-gray-500 text-xs"><Phone size={12} />{s.telepon}</div>
-                {:else}<span class="text-gray-300">-</span>{/if}
-              </td>
-              <td>
+                  <div class="flex items-center gap-1 text-muted-foreground text-xs"><Phone size={12} />{s.telepon}</div>
+                {:else}<span class="text-muted-foreground/40">-</span>{/if}
+              </Table.Cell>
+              <Table.Cell>
                 {#if s.email}
-                  <div class="flex items-center gap-1 text-gray-500 text-xs"><Mail size={12} />{s.email}</div>
-                {:else}<span class="text-gray-300">-</span>{/if}
-              </td>
-              <td class="text-right font-medium {s.hutang > 0 ? 'text-red-600' : 'text-gray-500'}">{formatCurrency(s.hutang)}</td>
-              <td>
+                  <div class="flex items-center gap-1 text-muted-foreground text-xs"><Mail size={12} />{s.email}</div>
+                {:else}<span class="text-muted-foreground/40">-</span>{/if}
+              </Table.Cell>
+              <Table.Cell class="text-right font-medium {s.hutang > 0 ? 'text-red-600' : 'text-muted-foreground'}">{formatCurrency(s.hutang)}</Table.Cell>
+              <Table.Cell>
                 <div class="flex items-center justify-center gap-1">
-                  <button class="btn-ghost btn-sm p-1.5" onclick={() => openEdit(s)}><Pencil size={14} /></button>
-                  <button class="btn-ghost btn-sm p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50" onclick={() => { deletingId = s.id; showConfirm = true; }}><Trash2 size={14} /></button>
+                  <Button variant="ghost" size="icon-sm" onclick={() => openEdit(s)}><Pencil size={14} /></Button>
+                  <Button variant="ghost" size="icon-sm" class="text-destructive hover:text-destructive hover:bg-destructive/10" onclick={() => { deletingId = s.id; showConfirm = true; }}><Trash2 size={14} /></Button>
                 </div>
-              </td>
-            </tr>
+              </Table.Cell>
+            </Table.Row>
           {/each}
         {/if}
-      </tbody>
-    </table>
+      </Table.Body>
+    </Table.Root>
   </div>
 </div>
 
@@ -146,33 +150,33 @@
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label" for="sup-kode">Kode *</label>
-          <input id="sup-kode" class="input" placeholder="SUP-001" bind:value={form.kode} />
+          <Label for="sup-kode">Kode *</Label>
+          <Input id="sup-kode" placeholder="SUP-001" bind:value={form.kode} />
         </div>
         <div>
-          <label class="label" for="sup-nama">Nama *</label>
-          <input id="sup-nama" class="input" placeholder="Nama supplier" bind:value={form.nama} />
+          <Label for="sup-nama">Nama *</Label>
+          <Input id="sup-nama" placeholder="Nama supplier" bind:value={form.nama} />
         </div>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label" for="sup-telepon">Telepon</label>
-          <input id="sup-telepon" class="input" placeholder="08xx" bind:value={form.telepon} />
+          <Label for="sup-telepon">Telepon</Label>
+          <Input id="sup-telepon" placeholder="08xx" bind:value={form.telepon} />
         </div>
         <div>
-          <label class="label" for="sup-email">Email</label>
-          <input id="sup-email" class="input" type="email" placeholder="email@domain.com" bind:value={form.email} />
+          <Label for="sup-email">Email</Label>
+          <Input id="sup-email" type="email" placeholder="email@domain.com" bind:value={form.email} />
         </div>
       </div>
       <div>
-        <label class="label" for="sup-alamat">Alamat</label>
-        <textarea id="sup-alamat" class="input" rows="2" placeholder="Alamat lengkap..." bind:value={form.alamat}></textarea>
+        <Label for="sup-alamat">Alamat</Label>
+        <textarea id="sup-alamat" class="flex min-h-15 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" rows="2" placeholder="Alamat lengkap..." bind:value={form.alamat}></textarea>
       </div>
     </div>
   {/snippet}
   {#snippet footer()}
-    <button class="btn-secondary" onclick={() => showModal = false}>Batal</button>
-    <button class="btn-primary" onclick={save} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+    <Button variant="outline" onclick={() => showModal = false}>Batal</Button>
+    <Button onclick={save} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</Button>
   {/snippet}
 </Modal>
 

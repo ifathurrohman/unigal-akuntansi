@@ -1,75 +1,34 @@
+use crate::commands::pengaturan::tanggal_hari_ini;
 use crate::db::Database;
 use crate::models::{DashboardData, LabaRugiItem, NeracaItem};
+use rusqlite::Connection;
 use tauri::State;
+
+fn sum(conn: &Connection, sql: &str) -> f64 {
+    conn.query_row(sql, [], |r| r.get(0)).unwrap_or(0.0)
+}
+
+fn count(conn: &Connection, sql: &str) -> i64 {
+    conn.query_row(sql, [], |r| r.get(0)).unwrap_or(0)
+}
 
 #[tauri::command]
 pub fn get_dashboard(db: State<Database>) -> Result<DashboardData, String> {
     let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
-    let total_kas: f64 = conn
-        .query_row(
-            "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE tipe='Aset' AND sub_tipe='Lancar' AND (nama LIKE '%Kas%' OR nama LIKE '%Bank%')",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap_or(0.0);
+    // Saldo disimpan sebagai debit - kredit; akun kredit dibalik agar tampil positif.
+    let total_kas = sum(&conn, "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE kas_bank=1 AND header=0");
+    let total_piutang = sum(&conn, "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE header=0 AND tipe='Aset' AND nama LIKE '%Piutang%'");
+    let total_hutang = sum(&conn, "SELECT COALESCE(-SUM(saldo),0) FROM akun WHERE header=0 AND tipe='Kewajiban' AND nama LIKE '%Hutang%'");
+    let total_pendapatan = sum(&conn, "SELECT COALESCE(-SUM(saldo),0) FROM akun WHERE header=0 AND tipe='Pendapatan'");
+    let total_beban = sum(&conn, "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE header=0 AND tipe='Beban'");
+    let total_aset = sum(&conn, "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE header=0 AND tipe='Aset'");
 
-    let total_piutang: f64 = conn
-        .query_row(
-            "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE nama LIKE '%Piutang%'",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap_or(0.0);
-
-    let total_hutang: f64 = conn
-        .query_row(
-            "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE nama LIKE '%Hutang%'",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap_or(0.0);
-
-    let total_pendapatan: f64 = conn
-        .query_row(
-            "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE tipe='Pendapatan'",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap_or(0.0);
-
-    let total_beban: f64 = conn
-        .query_row(
-            "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE tipe='Beban'",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap_or(0.0);
-
-    let total_aset: f64 = conn
-        .query_row(
-            "SELECT COALESCE(SUM(saldo),0) FROM akun WHERE tipe='Aset' AND LENGTH(kode) > 6",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap_or(0.0);
-
-    let jumlah_pelanggan: i64 = conn
-        .query_row("SELECT COUNT(*) FROM pelanggan WHERE aktif=1", [], |r| r.get(0))
-        .unwrap_or(0);
-
-    let jumlah_supplier: i64 = conn
-        .query_row("SELECT COUNT(*) FROM supplier WHERE aktif=1", [], |r| r.get(0))
-        .unwrap_or(0);
-
-    let jumlah_produk: i64 = conn
-        .query_row("SELECT COUNT(*) FROM produk WHERE aktif=1", [], |r| r.get(0))
-        .unwrap_or(0);
-
+    let bulan_ini = tanggal_hari_ini(&conn)[..7].to_string();
     let jurnal_bulan_ini: i64 = conn
         .query_row(
-            "SELECT COUNT(*) FROM jurnal WHERE strftime('%Y-%m', tanggal) = strftime('%Y-%m', 'now')",
-            [],
+            "SELECT COUNT(*) FROM jurnal WHERE substr(tanggal,1,7) = ?1 AND tipe != 'Penutup'",
+            rusqlite::params![bulan_ini],
             |r| r.get(0),
         )
         .unwrap_or(0);
@@ -82,44 +41,37 @@ pub fn get_dashboard(db: State<Database>) -> Result<DashboardData, String> {
         total_beban,
         laba_rugi: total_pendapatan - total_beban,
         total_aset,
-        jumlah_pelanggan,
-        jumlah_supplier,
-        jumlah_produk,
+        jumlah_pelanggan: count(&conn, "SELECT COUNT(*) FROM pelanggan WHERE aktif=1"),
+        jumlah_supplier: count(&conn, "SELECT COUNT(*) FROM supplier WHERE aktif=1"),
+        jumlah_produk: count(&conn, "SELECT COUNT(*) FROM produk WHERE aktif=1"),
         jurnal_bulan_ini,
     })
 }
 
-#[tauri::command]
-pub fn get_laba_rugi(db: State<Database>, tahun: i32, bulan: Option<i32>) -> Result<Vec<LabaRugiItem>, String> {
-    let conn = db.conn.lock().map_err(|e| e.to_string())?;
-
-    let filter = match bulan {
-        Some(b) => format!("AND strftime('%Y-%m', tanggal) = '{}-{:02}'", tahun, b),
-        None => format!("AND strftime('%Y', tanggal) = '{}'", tahun),
-    };
-
-    let sql = format!(
-        "SELECT a.kode, a.nama, a.tipe,
-         COALESCE(SUM(jd.debit - jd.kredit), 0) as saldo
-         FROM akun a
-         LEFT JOIN jurnal_detail jd ON jd.akun_id = a.id
-         LEFT JOIN jurnal j ON j.id = jd.jurnal_id {}
-         WHERE a.tipe IN ('Pendapatan', 'Beban') AND LENGTH(a.kode) > 6
-         GROUP BY a.id ORDER BY a.kode",
-        filter
-    );
-
-    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+/// Laba rugi untuk rentang tanggal (inklusif). Jurnal penutup tidak ikut dihitung.
+pub fn laba_rugi_rentang(conn: &Connection, dari: &str, sampai: &str) -> Result<Vec<LabaRugiItem>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT a.kode, a.nama, a.tipe, COALESCE(SUM(jd.debit - jd.kredit), 0)
+             FROM akun a
+             LEFT JOIN (
+                 SELECT d.akun_id, d.debit, d.kredit
+                 FROM jurnal_detail d JOIN jurnal j ON j.id = d.jurnal_id
+                 WHERE j.tanggal >= ?1 AND j.tanggal <= ?2 AND j.tipe != 'Penutup'
+             ) jd ON jd.akun_id = a.id
+             WHERE a.tipe IN ('Pendapatan', 'Beban') AND a.header = 0
+             GROUP BY a.id ORDER BY a.kode",
+        )
+        .map_err(|e| e.to_string())?;
     let rows = stmt
-        .query_map([], |row| {
+        .query_map(rusqlite::params![dari, sampai], |row| {
             let tipe: String = row.get(2)?;
             let raw_saldo: f64 = row.get(3)?;
-            let saldo = if tipe == "Pendapatan" { -raw_saldo } else { raw_saldo };
             Ok(LabaRugiItem {
                 kode: row.get(0)?,
                 nama: row.get(1)?,
+                saldo: if tipe == "Pendapatan" { -raw_saldo } else { raw_saldo },
                 tipe,
-                saldo,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -127,11 +79,22 @@ pub fn get_laba_rugi(db: State<Database>, tahun: i32, bulan: Option<i32>) -> Res
 }
 
 #[tauri::command]
-pub fn get_neraca(db: State<Database>) -> Result<Vec<NeracaItem>, String> {
+pub fn get_laba_rugi(db: State<Database>, tahun: i32, bulan: Option<i32>) -> Result<Vec<LabaRugiItem>, String> {
     let conn = db.conn.lock().map_err(|e| e.to_string())?;
+    let (dari, sampai) = match bulan {
+        Some(b) => (format!("{}-{:02}-01", tahun, b), format!("{}-{:02}-31", tahun, b)),
+        None => (format!("{}-01-01", tahun), format!("{}-12-31", tahun)),
+    };
+    laba_rugi_rentang(&conn, &dari, &sampai)
+}
+
+/// Neraca per saat ini (berdasarkan saldo akun), termasuk laba berjalan yang belum ditutup.
+pub fn neraca_sekarang(conn: &Connection) -> Result<Vec<NeracaItem>, String> {
+    // Saldo disimpan sebagai debit - kredit; Kewajiban & Modal dibalik agar tampil positif.
     let mut stmt = conn
         .prepare(
-            "SELECT kode,nama,tipe,sub_tipe,saldo FROM akun WHERE tipe IN ('Aset','Kewajiban','Modal') AND LENGTH(kode) > 6 ORDER BY kode",
+            "SELECT kode,nama,tipe,sub_tipe, CASE WHEN tipe = 'Aset' THEN saldo ELSE -saldo END
+             FROM akun WHERE tipe IN ('Aset','Kewajiban','Modal') AND header = 0 ORDER BY kode",
         )
         .map_err(|e| e.to_string())?;
     let rows = stmt
@@ -145,5 +108,23 @@ pub fn get_neraca(db: State<Database>) -> Result<Vec<NeracaItem>, String> {
             })
         })
         .map_err(|e| e.to_string())?;
-    rows.map(|r| r.map_err(|e| e.to_string())).collect()
+    let mut items: Vec<NeracaItem> = rows.map(|r| r.map_err(|e| e.to_string())).collect::<Result<_, _>>()?;
+
+    let laba = sum(conn, "SELECT COALESCE(-SUM(saldo), 0) FROM akun WHERE tipe IN ('Pendapatan','Beban') AND header = 0");
+    if laba.abs() > 0.005 {
+        items.push(NeracaItem {
+            kode: "3-9999".to_string(),
+            nama: "Laba (Rugi) Periode Berjalan".to_string(),
+            tipe: "Modal".to_string(),
+            sub_tipe: None,
+            saldo: laba,
+        });
+    }
+    Ok(items)
+}
+
+#[tauri::command]
+pub fn get_neraca(db: State<Database>) -> Result<Vec<NeracaItem>, String> {
+    let conn = db.conn.lock().map_err(|e| e.to_string())?;
+    neraca_sekarang(&conn)
 }

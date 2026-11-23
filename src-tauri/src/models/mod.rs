@@ -10,6 +10,8 @@ pub struct Akun {
     pub saldo_normal: String,
     pub saldo: f64,
     pub aktif: bool,
+    pub header: bool,
+    pub kas_bank: bool,
     pub created_at: String,
 }
 
@@ -20,7 +22,8 @@ pub struct AkunInput {
     pub tipe: String,
     pub sub_tipe: Option<String>,
     pub saldo_normal: String,
-    pub saldo: Option<f64>,
+    pub header: Option<bool>,
+    pub kas_bank: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -186,4 +189,40 @@ pub struct NeracaItem {
     pub tipe: String,
     pub sub_tipe: Option<String>,
     pub saldo: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Perusahaan {
+    pub nama: String,
+    pub alamat: Option<String>,
+    pub kota: Option<String>,
+    pub telepon: Option<String>,
+    pub email: Option<String>,
+    pub npwp: Option<String>,
+    pub akun_laba_ditahan_id: Option<i64>,
+    pub tanggal_kerja: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Periode {
+    pub id: i64,
+    pub nama: String,
+    pub tanggal_mulai: String,
+    pub tanggal_selesai: String,
+    pub status: String,
+    pub closed_at: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PeriodeInput {
+    pub nama: String,
+    pub tanggal_mulai: String,
+    pub tanggal_selesai: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LaporanArsip {
+    pub jenis: String,
+    pub created_at: String,
+    pub data: serde_json::Value,
 }

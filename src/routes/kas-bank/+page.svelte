@@ -1,10 +1,18 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Plus, Search, Trash2, ArrowUpCircle, ArrowDownCircle, ArrowLeftRight } from 'lucide-svelte';
+  import { Plus, Search, Trash2, ArrowUpCircle, ArrowDownCircle, ArrowLeftRight, X } from 'lucide-svelte';
   import Modal from '$lib/components/Modal.svelte';
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
-  import { callCommand, showNotification, formatCurrency, formatDate } from '$lib/stores/app.svelte';
+  import { callCommand, showNotification, hariIni, formatCurrency, formatDate } from '$lib/stores/app.svelte';
   import type { KasBank, KasBankInput, Akun } from '$lib/types';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import { Input } from '$lib/components/ui/input/index.js';
+  import { Label } from '$lib/components/ui/label/index.js';
+  import { Badge } from '$lib/components/ui/badge/index.js';
+  import * as Select from '$lib/components/ui/select/index.js';
+  import * as Table from '$lib/components/ui/table/index.js';
+  import * as Card from '$lib/components/ui/card/index.js';
+  import { DatePicker } from '$lib/components/ui/date-picker/index.js';
 
   let list = $state<KasBank[]>([]);
   let akunKasBankList = $state<Akun[]>([]);
@@ -18,10 +26,9 @@
   let saving = $state(false);
   let deleting = $state(false);
 
-  const today = new Date().toISOString().slice(0, 10);
 
   let form = $state<KasBankInput>({
-    tanggal: today,
+    tanggal: hariIni(),
     keterangan: null,
     tipe: 'Masuk',
     akun_id: 0,
@@ -53,7 +60,7 @@
   }
 
   function openCreate(tipe: 'Masuk' | 'Keluar') {
-    form = { tanggal: today, keterangan: null, tipe, akun_id: akunKasBankList[0]?.id || 0, akun_lawan_id: null, jumlah: 0 };
+    form = { tanggal: hariIni(), keterangan: null, tipe, akun_id: akunKasBankList[0]?.id || 0, akun_lawan_id: null, jumlah: 0 };
     showModal = true;
   }
 
@@ -88,100 +95,116 @@
 </script>
 
 <div class="p-6">
-  <div class="page-header">
+  <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="page-title">Kas & Bank</h1>
-      <p class="page-subtitle">Manajemen transaksi kas dan bank</p>
+      <h1 class="text-xl font-semibold text-foreground">Kas & Bank</h1>
+      <p class="text-sm text-muted-foreground mt-0.5">Manajemen transaksi kas dan bank</p>
     </div>
     <div class="flex gap-2">
-      <button class="btn bg-green-600 text-white hover:bg-green-700 shadow-sm" onclick={() => openCreate('Masuk')}>
+      <Button class="bg-green-600 hover:bg-green-700 text-white" onclick={() => openCreate('Masuk')}>
         <ArrowUpCircle size={16} /> Kas Masuk
-      </button>
-      <button class="btn bg-red-600 text-white hover:bg-red-700 shadow-sm" onclick={() => openCreate('Keluar')}>
+      </Button>
+      <Button class="bg-red-600 hover:bg-red-700 text-white" onclick={() => openCreate('Keluar')}>
         <ArrowDownCircle size={16} /> Kas Keluar
-      </button>
+      </Button>
     </div>
   </div>
 
   <!-- Summary -->
   <div class="grid grid-cols-3 gap-4 mb-6">
-    <div class="stat-card">
-      <p class="text-xs text-gray-500 mb-1">Total Kas Masuk</p>
+    <Card.Root class="p-5">
+      <p class="text-xs text-muted-foreground mb-1">Total Kas Masuk</p>
       <p class="text-lg font-bold text-green-600">{formatCurrency(totalMasuk)}</p>
-    </div>
-    <div class="stat-card">
-      <p class="text-xs text-gray-500 mb-1">Total Kas Keluar</p>
+    </Card.Root>
+    <Card.Root class="p-5">
+      <p class="text-xs text-muted-foreground mb-1">Total Kas Keluar</p>
       <p class="text-lg font-bold text-red-600">{formatCurrency(totalKeluar)}</p>
-    </div>
-    <div class="stat-card">
-      <p class="text-xs text-gray-500 mb-1">Saldo Bersih</p>
-      <p class="text-lg font-bold {totalMasuk - totalKeluar >= 0 ? 'text-gray-900' : 'text-red-600'}">{formatCurrency(totalMasuk - totalKeluar)}</p>
-    </div>
+    </Card.Root>
+    <Card.Root class="p-5">
+      <p class="text-xs text-muted-foreground mb-1">Saldo Bersih</p>
+      <p class="text-lg font-bold {totalMasuk - totalKeluar >= 0 ? 'text-foreground' : 'text-red-600'}">{formatCurrency(totalMasuk - totalKeluar)}</p>
+    </Card.Root>
   </div>
 
   <!-- Filters -->
   <div class="flex items-center gap-3 mb-4">
     <div class="relative flex-1 max-w-sm">
-      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-      <input class="input pl-9" placeholder="Cari transaksi..." bind:value={search} />
+      <Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <Input class="pl-9" placeholder="Cari transaksi..." bind:value={search} />
     </div>
-    <select class="input w-40" bind:value={filterTipe}>
-      <option value="">Semua Tipe</option>
-      <option value="Masuk">Masuk</option>
-      <option value="Keluar">Keluar</option>
-    </select>
+    <Select.Root bind:value={filterTipe}>
+      <Select.Trigger class="w-40">
+        <Select.Value placeholder="Semua Tipe" />
+      </Select.Trigger>
+      <Select.Content>
+        <Select.Item value="" label="Semua Tipe">Semua Tipe</Select.Item>
+        <Select.Item value="Masuk">Masuk</Select.Item>
+        <Select.Item value="Keluar">Keluar</Select.Item>
+      </Select.Content>
+    </Select.Root>
+    {#if search || filterTipe}
+      <Button variant="ghost" size="sm" onclick={() => { search = ''; filterTipe = ''; }} class="text-muted-foreground gap-1.5">
+        <X size={14} /> Reset Filter
+      </Button>
+    {/if}
   </div>
 
-  <div class="table-wrapper">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Nomor</th>
-          <th>Tanggal</th>
-          <th>Keterangan</th>
-          <th>Tipe</th>
-          <th>Akun</th>
-          <th class="text-right">Jumlah</th>
-          <th class="text-center">Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
+  <div class="overflow-x-auto rounded-xl border border-border">
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.Head>Nomor</Table.Head>
+          <Table.Head>Tanggal</Table.Head>
+          <Table.Head>Keterangan</Table.Head>
+          <Table.Head>Tipe</Table.Head>
+          <Table.Head>Akun</Table.Head>
+          <Table.Head class="text-right">Jumlah</Table.Head>
+          <Table.Head class="text-center">Aksi</Table.Head>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
         {#if loading}
-          <tr><td colspan="7" class="text-center py-12 text-gray-400">Memuat data...</td></tr>
+          <Table.Row><Table.Cell colspan={7} class="text-center py-12 text-muted-foreground">Memuat data...</Table.Cell></Table.Row>
         {:else if filtered.length === 0}
-          <tr><td colspan="7" class="text-center py-12 text-gray-400">Tidak ada transaksi</td></tr>
+          <Table.Row><Table.Cell colspan={7} class="text-center py-12 text-muted-foreground">Tidak ada transaksi</Table.Cell></Table.Row>
         {:else}
           {#each filtered as k}
-            <tr>
-              <td class="font-mono text-xs font-semibold text-primary-600">{k.nomor}</td>
-              <td class="text-xs text-gray-500">{formatDate(k.tanggal)}</td>
-              <td class="text-gray-700">{k.keterangan || '-'}</td>
-              <td>
+            <Table.Row>
+              <Table.Cell class="font-mono text-xs font-semibold text-primary">{k.nomor}</Table.Cell>
+              <Table.Cell class="text-xs text-muted-foreground">{formatDate(k.tanggal)}</Table.Cell>
+              <Table.Cell class="text-foreground">{k.keterangan || '-'}</Table.Cell>
+              <Table.Cell>
                 {#if k.tipe === 'Masuk'}
-                  <span class="badge-green flex items-center gap-1 w-fit"><ArrowUpCircle size={11} />{k.tipe}</span>
+                  <Badge class="bg-green-100 text-green-700 hover:bg-green-100 flex items-center gap-1 w-fit">
+                    <ArrowUpCircle size={11} />{k.tipe}
+                  </Badge>
                 {:else if k.tipe === 'Keluar'}
-                  <span class="badge-red flex items-center gap-1 w-fit"><ArrowDownCircle size={11} />{k.tipe}</span>
+                  <Badge class="bg-red-100 text-red-700 hover:bg-red-100 flex items-center gap-1 w-fit">
+                    <ArrowDownCircle size={11} />{k.tipe}
+                  </Badge>
                 {:else}
-                  <span class="badge-blue flex items-center gap-1 w-fit"><ArrowLeftRight size={11} />{k.tipe}</span>
+                  <Badge class="bg-blue-100 text-blue-700 hover:bg-blue-100 flex items-center gap-1 w-fit">
+                    <ArrowLeftRight size={11} />{k.tipe}
+                  </Badge>
                 {/if}
-              </td>
-              <td class="text-xs text-gray-600">{k.akun_nama}</td>
-              <td class="text-right font-semibold {k.tipe === 'Masuk' ? 'text-green-600' : 'text-red-600'}">
+              </Table.Cell>
+              <Table.Cell class="text-xs text-muted-foreground">{k.akun_nama}</Table.Cell>
+              <Table.Cell class="text-right font-semibold {k.tipe === 'Masuk' ? 'text-green-600' : 'text-red-600'}">
                 {formatCurrency(k.jumlah)}
-              </td>
-              <td>
+              </Table.Cell>
+              <Table.Cell>
                 <div class="flex justify-center">
-                  <button class="btn-ghost btn-sm p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50"
+                  <Button variant="ghost" size="icon-sm" class="text-destructive hover:text-destructive hover:bg-destructive/10"
                     onclick={() => { deletingId = k.id; showConfirm = true; }}>
                     <Trash2 size={14} />
-                  </button>
+                  </Button>
                 </div>
-              </td>
-            </tr>
+              </Table.Cell>
+            </Table.Row>
           {/each}
         {/if}
-      </tbody>
-    </table>
+      </Table.Body>
+    </Table.Root>
   </div>
 </div>
 
@@ -190,41 +213,55 @@
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="label" for="kb-tanggal">Tanggal *</label>
-          <input id="kb-tanggal" class="input" type="date" bind:value={form.tanggal} />
+          <Label for="kb-tanggal">Tanggal *</Label>
+          <DatePicker id="kb-tanggal" bind:value={form.tanggal} />
         </div>
         <div>
-          <label class="label" for="kb-akun">Akun Kas/Bank *</label>
-          <select id="kb-akun" class="input" bind:value={form.akun_id}>
-            <option value={0}>-- Pilih Akun --</option>
-            {#each akunKasBankList as a}
-              <option value={a.id}>{a.nama}</option>
-            {/each}
-          </select>
+          <Label for="kb-akun">Akun Kas/Bank *</Label>
+          <Select.Root
+            value={form.akun_id > 0 ? String(form.akun_id) : ''}
+            onValueChange={(v) => { form.akun_id = Number(v) || 0; }}
+          >
+            <Select.Trigger class="w-full" id="kb-akun">
+              <Select.Value placeholder="-- Pilih Akun --" />
+            </Select.Trigger>
+            <Select.Content>
+              {#each akunKasBankList as a}
+                <Select.Item value={String(a.id)}>{a.nama}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
         </div>
       </div>
       <div>
-        <label class="label" for="kb-akun-lawan">Akun Lawan</label>
-        <select id="kb-akun-lawan" class="input" bind:value={form.akun_lawan_id}>
-          <option value={null}>-- Pilih Akun Lawan --</option>
-          {#each akunAll as a}
-            <option value={a.id}>{a.kode} - {a.nama}</option>
-          {/each}
-        </select>
+        <Label for="kb-akun-lawan">Akun Lawan *</Label>
+        <Select.Root
+          value={form.akun_lawan_id ? String(form.akun_lawan_id) : ''}
+          onValueChange={(v) => { form.akun_lawan_id = v ? Number(v) : null; }}
+        >
+          <Select.Trigger class="w-full" id="kb-akun-lawan">
+            <Select.Value placeholder="-- Pilih Akun Lawan --" />
+          </Select.Trigger>
+          <Select.Content>
+            {#each akunAll.filter(x => !x.header && x.aktif && x.id !== form.akun_id) as a}
+              <Select.Item value={String(a.id)}>{a.kode} - {a.nama}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
       </div>
       <div>
-        <label class="label" for="kb-jumlah">Jumlah *</label>
-        <input id="kb-jumlah" class="input" type="number" placeholder="0" bind:value={form.jumlah} />
+        <Label for="kb-jumlah">Jumlah *</Label>
+        <Input id="kb-jumlah" type="number" placeholder="0" bind:value={form.jumlah} />
       </div>
       <div>
-        <label class="label" for="kb-ket">Keterangan</label>
-        <input id="kb-ket" class="input" placeholder="Keterangan transaksi..." bind:value={form.keterangan} />
+        <Label for="kb-ket">Keterangan</Label>
+        <Input id="kb-ket" placeholder="Keterangan transaksi..." bind:value={form.keterangan} />
       </div>
     </div>
   {/snippet}
   {#snippet footer()}
-    <button class="btn-secondary" onclick={() => showModal = false}>Batal</button>
-    <button class="btn-primary" onclick={save} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+    <Button variant="outline" onclick={() => showModal = false}>Batal</Button>
+    <Button onclick={save} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</Button>
   {/snippet}
 </Modal>
 
